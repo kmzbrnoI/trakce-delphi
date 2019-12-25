@@ -73,6 +73,14 @@ type
   	functions: Cardinal;
   end;
 
+  TCommandCallbackFunc = procedure (Sender:TObject; Data:Pointer) of object;
+  TCommandCallback = record
+    callback: TCommandCallbackFunc;
+    data: Pointer;
+  end;
+  TCb = TCommandCallback;
+
+
   ///////////////////////////////////////////////////////////////////////////
   // Events called from library to TTrakceIFace:
 
@@ -98,6 +106,8 @@ type
 
   TDllApiVersionAsker = function(version:Integer):Boolean; stdcall;
   TDllApiVersionSetter = function(version:Integer):Integer; stdcall;
+
+  TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo:TTrkLocoInfo);
 
   // TODO
 
@@ -163,8 +173,20 @@ type
      procedure Disconnect();
      function Connected():boolean;
 
+     function TrackStatus():TTrkStatus;
+     procedure SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
+
+     procedure LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
+     procedure LocoRelease(addr: Word; ok: TCb);
+
+     procedure LocoSetSpeed(addr: Word; speed: Integer; direction: Integer; ok: TCb; err: TCb);
+     procedure LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
+     procedure LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
+     procedure LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
+
      // versions
      class function IsApiVersionSupport(version:Cardinal):Boolean;
+     class function Callback(callback:TCommandCallbackFunc = nil; data:Pointer = nil):TCommandCallback;
 
      property BeforeOpen:TNotifyEvent read eBeforeOpen write eBeforeOpen;
      property AfterOpen:TNotifyEvent read eAfterOpen write eAfterOpen;
@@ -388,6 +410,52 @@ function TTrakceIFace.Connected():boolean;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function TTrakceIFace.TrackStatus():TTrkStatus;
+begin
+
+end;
+
+procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
+begin
+
+end;
+
+procedure TTrakceIFace.LocoRelease(addr: Word; ok: TCb);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakceIFace.LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
+begin
+
+end;
+
+procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Integer; ok: TCb; err: TCb);
+begin
+
+end;
+
+procedure TTrakceIFace.LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
+begin
+
+end;
+
+procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 class function TTrakceIFace.IsApiVersionSupport(version:Cardinal):Boolean;
 var i:Integer;
 begin
@@ -414,6 +482,14 @@ begin
   end;
 
  raise ETrkUnsupportedApiVersion.Create('Library does not support any of the supported versions');
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TTrakceIFace.Callback(callback:TCommandCallbackFunc = nil; data:Pointer = nil):TCommandCallback;
+begin
+ Result.callback := callback;
+ Result.data := data;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
