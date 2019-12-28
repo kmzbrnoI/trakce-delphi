@@ -97,10 +97,9 @@ type
   TDllApiVersionAsker = function(version:Integer):Boolean; stdcall;
   TDllApiVersionSetter = function(version:Integer):Integer; stdcall;
 
+  TDllFSetTrackStatus = procedure(trkStatus: Cardinal; ok: TCb; err: TCb);
+
   TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo:TTrkLocoInfo);
-
-  // TODO
-
   TDllStdNotifyBind = procedure(event:TTrkStdNotifyEvent; data:Pointer); stdcall;
   TDllLogBind = procedure(event:TTrkLogEvent; data:Pointer); stdcall;
 
@@ -133,6 +132,9 @@ type
     dllFuncConnect : TDllFGeneral;
     dllFuncDisconnect : TDllFGeneral;
     dllFuncConnected : TDllBoolGetter;
+
+    dllFuncTrackStatus : TDllFCard;
+    dllFuncSetTrackStatus : TDllFSetTrackStatus;
 
     // ------------------------------------------------------------------
     // Events from TTrakceIFace
@@ -234,6 +236,9 @@ procedure TTrakceIFace.Reset();
   dllFuncConnect := nil;
   dllFuncDisconnect := nil;
   dllFuncConnected := nil;
+
+  dllFuncTrackStatus := nil;
+  dllFuncSetTrackStatus := nil;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -315,6 +320,13 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllFuncConnected := TDllBoolGetter(GetProcAddress(dllHandle, 'connected'));
   if (not Assigned(dllFuncConnected)) then unbound.Add('connected');
 
+  // track status getting & setting
+  dllFuncTrackStatus := TDllFCard(GetProcAddress(dllHandle, 'trackStatus'));
+  if (not Assigned(dllFuncTrackStatus)) then unbound.Add('trackStatus');
+  dllFuncSetTrackStatus := TDllFSetTrackStatus(GetProcAddress(dllHandle, 'setTrackStatus'));
+  if (not Assigned(dllFuncSetTrackStatus)) then unbound.Add('setTrackStatus');
+
+
   // events
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
   if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeOpen, self)
@@ -359,7 +371,7 @@ procedure TTrakceIFace.ShowConfigDialog();
   if (Assigned(dllFuncShowConfigDialog)) then
     dllFuncShowConfigDialog()
   else
-    raise ETrkFuncNotAssigned.Create('FFuncShowConfigDialog not assigned');
+    raise ETrkFuncNotAssigned.Create('dllFuncShowConfigDialog not assigned');
  end;
 
 function TTrakceIFace.HasDialog():boolean;
@@ -374,7 +386,7 @@ procedure TTrakceIFace.Connect();
 var res:Integer;
  begin
   if (not Assigned(dllFuncConnect)) then
-    raise ETrkFuncNotAssigned.Create('FFuncOpen not assigned');
+    raise ETrkFuncNotAssigned.Create('dllFuncConnect not assigned');
 
   res := dllFuncConnect();
 
@@ -412,12 +424,18 @@ function TTrakceIFace.Connected():boolean;
 
 function TTrakceIFace.TrackStatus():TTrkStatus;
 begin
-
+  if (Assigned(dllFuncTrackStatus)) then
+    Result := TTrkStatus(dllFuncTrackStatus())
+  else
+    raise ETrkFuncNotAssigned.Create('dllFuncTrackStatus not assigned');
 end;
 
 procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 begin
-
+  if (Assigned(dllFuncSetTrackStatus)) then
+    dllFuncSetTrackStatus(Integer(status), ok, err)
+  else
+    raise ETrkFuncNotAssigned.Create('dllFuncSetTrackStatus not assigned');
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
