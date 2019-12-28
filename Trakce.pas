@@ -1,15 +1,11 @@
 ////////////////////////////////////////////////////////////////////////////////
-// RCS.pas
-// Interface to Railroad Control System (e.g. MTB, simulator, possibly DCC).
-// (c) Jan Horacek, Michal Petrilak 2017-2019
-// jan.horacek@kmz-brno.cz, engineercz@gmail.com
-// license: Apache license v2.0
+// Trakce.pas: Interface to Trakce (e.g. XpressNET, LocoNET, Simulator).
 ////////////////////////////////////////////////////////////////////////////////
 
 {
    LICENSE:
 
-   Copyright 2017-2019 Jan Horacek, Michal Petrilak
+   Copyright 2019 Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,14 +21,8 @@
 }
 
 {
-  TRCSIFace class allows its parent to load dll library with railroad control
-  system and simply use its functions.
-}
-
-{
-  WARNING:
-   It is required to check whether functions in this class are really mapped to
-   dll functions (the do not have to exist)
+  TTrakceIFace class allows its parent to load dll library with Trakce and
+  simply use its functions.
 }
 
 unit Trakce;
@@ -117,6 +107,12 @@ type
   ///////////////////////////////////////////////////////////////////////////
 
   TTrakceIFace = class
+  private const
+   _Default_Cb : TCb = (
+     callback: nil;
+     data: nil;
+   );
+
   private
     dllName: string;
     dllHandle: Cardinal;
@@ -159,7 +155,7 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadLib(path:string; configFn:string);
+     procedure LoadLib(path:string);
      procedure UnloadLib();
 
      ////////////////////////////////////////////////////////////////////
@@ -176,6 +172,8 @@ type
      function TrackStatus():TTrkStatus;
      procedure SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 
+     procedure EmergencyStop(ok: TCb; err: TCb);
+
      procedure LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
      procedure LocoRelease(addr: Word; ok: TCb);
 
@@ -184,8 +182,10 @@ type
      procedure LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
      procedure LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
 
-     // versions
+     procedure PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
+
      class function IsApiVersionSupport(version:Cardinal):Boolean;
+
      class function Callback(callback:TCommandCallbackFunc = nil; data:Pointer = nil):TCommandCallback;
 
      property BeforeOpen:TNotifyEvent read eBeforeOpen write eBeforeOpen;
@@ -273,7 +273,7 @@ procedure dllOnLog(Sender: TObject; data:Pointer; logLevel:Integer; msg:PChar); 
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
-procedure TTrakceIFace.LoadLib(path:string; configFn:string);
+procedure TTrakceIFace.LoadLib(path:string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
  begin
@@ -422,6 +422,13 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
+procedure TTrakceIFace.EmergencyStop(ok: TCb; err: TCb);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
 begin
 
@@ -450,6 +457,13 @@ begin
 end;
 
 procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
+begin
+
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakceIFace.PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
 begin
 
 end;
