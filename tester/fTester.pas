@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Trakce;
+  Dialogs, StdCtrls, Trakce, Spin;
 
 type
   TF_Tester = class(TForm)
@@ -17,6 +17,8 @@ type
     B_Show_Config: TButton;
     B_Open: TButton;
     B_Close: TButton;
+    Label1: TLabel;
+    CB_Loglevel: TComboBox;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_LoadClick(Sender: TObject);
@@ -125,8 +127,9 @@ end;
 
 procedure TF_Tester.Log(Sender: TObject; logLevel:TTrkLogLevel; msg:string);
 begin
- Self.M_Log.Lines.Insert(0, FormatDateTime('hh:nn:ss,zzz', Now) + ': ' +
-                         trakce.LogLevelToString(logLevel) + ': ' + msg);
+ if (Integer(logLevel) <= Self.CB_Loglevel.ItemIndex) then
+   Self.M_Log.Lines.Insert(0, FormatDateTime('hh:nn:ss,zzz', Now) + ': ' +
+                           trakce.LogLevelToString(logLevel) + ': ' + msg);
 end;
 
 procedure TF_Tester.OnAppException(Sender: TObject; E: Exception);

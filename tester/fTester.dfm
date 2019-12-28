@@ -18,8 +18,15 @@ object F_Tester: TF_Tester
   OnDestroy = FormDestroy
   PixelsPerInch = 96
   TextHeight = 13
+  object Label1: TLabel
+    Left = 448
+    Top = 183
+    Width = 43
+    Height = 13
+    Caption = 'Loglevel:'
+  end
   object M_Log: TMemo
-    Left = 8
+    Left = 7
     Top = 8
     Width = 619
     Height = 169
@@ -98,5 +105,24 @@ object F_Tester: TF_Tester
     Caption = 'Close'
     TabOrder = 8
     OnClick = B_CloseClick
+  end
+  object CB_Loglevel: TComboBox
+    Left = 497
+    Top = 183
+    Width = 129
+    Height = 21
+    Style = csDropDownList
+    ItemHeight = 13
+    ItemIndex = 3
+    TabOrder = 9
+    Text = 'Infos'
+    Items.Strings = (
+      'None'
+      'Errors'
+      'Warnings'
+      'Infos'
+      'Commands'
+      'Data'
+      'Debug')
   end
 end
