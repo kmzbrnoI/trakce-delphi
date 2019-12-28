@@ -128,7 +128,7 @@ end;
 
 procedure TF_Tester.OnTrkSetOk(Sender: TObject; data: Pointer);
 begin
- Self.Log(Self, llInfo, 'OK');
+ Self.Log(Self, llInfo, 'OK, data: ' + IntToStr(Integer(data)));
 end;
 
 procedure TF_Tester.OnTrkSetError(Sender: TObject; data: Pointer);
