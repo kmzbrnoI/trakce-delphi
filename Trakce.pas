@@ -333,19 +333,19 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   // events
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
   if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeOpen, self)
-  else unbound.Add('BindBeforeOpen');
+  else unbound.Add('bindBeforeOpen');
 
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterOpen'));
   if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterOpen, self)
-  else unbound.Add('BindAfterOpen');
+  else unbound.Add('bindAfterOpen');
 
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeClose'));
   if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeClose, self)
-  else unbound.Add('BindBeforeClose');
+  else unbound.Add('bindBeforeClose');
 
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterClose'));
   if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterClose, self)
-  else unbound.Add('BindAfterClose');
+  else unbound.Add('bindAfterClose');
 
   // other events
   dllFuncOnLogBind := TDllLogBind(GetProcAddress(dllHandle, 'bindOnLog'));
