@@ -30,6 +30,8 @@ type
 
     procedure Log(Sender: TObject; logLevel:TTrkLogLevel; msg:string);
     procedure OnAppException(Sender: TObject; E: Exception);
+    procedure OnTrackStatusChanged(Sender: TObject; status: TTrkStatus);
+    procedure OnLocoStolen(Sender: TObject; addr: Word);
   end;
 
 var
@@ -80,6 +82,8 @@ begin
  Application.OnException := Self.OnAppException;
  Self.trakce := TTrakceIFace.Create();
  Self.trakce.OnLog := Self.Log;
+ Self.trakce.OnTrackStatusChanged := Self.OnTrackStatusChanged;
+ Self.trakce.OnLocoStolen := Self.OnLocoStolen;
 end;
 
 procedure TF_Tester.FormDestroy(Sender: TObject);
@@ -101,6 +105,21 @@ end;
 procedure TF_Tester.OnAppException(Sender: TObject; E: Exception);
 begin
  Self.Log(Self, llErrors, 'Exception: ' + E.Message);
+end;
+
+procedure TF_Tester.OnTrackStatusChanged(Sender: TObject; status: TTrkStatus);
+begin
+ case (status) of
+  tsUnknown: Self.Log(Self, llInfo, 'Track status changed: UNKNOWN');
+  tsOff: Self.Log(Self, llInfo, 'Track status changed: OFF');
+  tsOn: Self.Log(Self, llInfo, 'Track status changed: ON');
+  tsProgramming: Self.Log(Self, llInfo, 'Track status changed: PROGRAMMING');
+ end;
+end;
+
+procedure TF_Tester.OnLocoStolen(Sender: TObject; addr: Word);
+begin
+ Self.Log(Self, llInfo, 'Loco stolen: ' + IntToStr(addr));
 end;
 
 end.
