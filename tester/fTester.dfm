@@ -1,6 +1,7 @@
 object F_Tester: TF_Tester
   Left = 0
   Top = 0
+  ActiveControl = B_Load
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Tester trakce'
@@ -22,7 +23,10 @@ object F_Tester: TF_Tester
     Top = 8
     Width = 619
     Height = 169
+    ReadOnly = True
+    ScrollBars = ssVertical
     TabOrder = 0
+    OnDblClick = M_LogDblClick
   end
   object E_Path: TEdit
     Left = 8
