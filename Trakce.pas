@@ -103,6 +103,7 @@ type
   TDllStdNotifyBind = procedure(event:TTrkStdNotifyEvent; data:Pointer); stdcall;
   TDllLogBind = procedure(event:TTrkLogEvent; data:Pointer); stdcall;
   TDllTrackStatusChangedBind = procedure(event:TTrkStatusChangedEv; data:Pointer); stdcall;
+  TDllLocoEventBind = procedure(event:TTrkLocoEv; data:Pointer); stdcall;
 
   ///////////////////////////////////////////////////////////////////////////
 
@@ -147,6 +148,7 @@ type
 
     eOnLog : TLogEvent;
     eOnTrackStatusChanged : TStatusChangedEv;
+    eOnLocoStolen : TLocoEv;
 
      procedure Reset();
      procedure PickApiVersion();
@@ -201,6 +203,7 @@ type
 
      property OnLog:TLogEvent read eOnLog write eOnLog;
      property OnTrackStatusChanged:TStatusChangedEv read eOnTrackStatusChanged write eOnTrackStatusChanged;
+     property OnLocoStolen:TLocoEv read eOnLocoStolen write eOnLocoStolen;
 
      property Lib: string read dllName;
      property apiVersion: Cardinal read mApiVersion;
@@ -287,6 +290,12 @@ procedure dllOnTrackStatusChanged(Sender: TObject; data:Pointer; trkStatus:Integ
     TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
  end;
 
+procedure dllOnLocoStolen(Sender: TObject; data:Pointer; addr: Word); stdcall;
+ begin
+  if (Assigned(TTrakceIFace(data).OnLocoStolen)) then
+    TTrakceIFace(data).OnLocoStolen(TTrakceIFace(data), addr);
+ end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
@@ -294,6 +303,7 @@ procedure TTrakceIFace.LoadLib(path:string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
     dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
+    dllLocoEventBind: TDllLocoEventBind;
  begin
   Self.unbound.Clear();
 
@@ -365,6 +375,10 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllFuncOnLogBind := TDllLogBind(GetProcAddress(dllHandle, 'bindOnLog'));
   if (Assigned(dllFuncOnLogBind)) then dllFuncOnLogBind(@dllOnLog, self)
   else unbound.Add('bindOnLog');
+
+  dllLocoEventBind := TDllLocoEventBind(GetProcAddress(dllHandle, 'bindOnLocoStolen'));
+  if (Assigned(dllLocoEventBind)) then dllLocoEventBind(@dllOnLocoStolen, self)
+  else unbound.Add('bindOnLocoStolen');
  end;
 
 procedure TTrakceIFace.UnloadLib();
