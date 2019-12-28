@@ -12,11 +12,17 @@ type
     E_Path: TEdit;
     B_Load: TButton;
     B_Unload: TButton;
+    B_DCC_Go: TButton;
+    B_DCC_Stop: TButton;
+    B_Show_Config: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_LoadClick(Sender: TObject);
     procedure B_UnloadClick(Sender: TObject);
     procedure M_LogDblClick(Sender: TObject);
+    procedure B_Show_ConfigClick(Sender: TObject);
+    procedure B_DCC_GoClick(Sender: TObject);
+    procedure B_DCC_StopClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -33,6 +39,16 @@ implementation
 
 {$R *.dfm}
 
+procedure TF_Tester.B_DCC_GoClick(Sender: TObject);
+begin
+ trakce.SetTrackStatus(TTrkStatus.tsOn, TTrakceIFace.Callback(), TTrakceIFace.Callback());
+end;
+
+procedure TF_Tester.B_DCC_StopClick(Sender: TObject);
+begin
+ trakce.SetTrackStatus(TTrkStatus.tsOff, TTrakceIFace.Callback(), TTrakceIFace.Callback());
+end;
+
 procedure TF_Tester.B_LoadClick(Sender: TObject);
 var unbound, lib: string;
 begin
@@ -45,6 +61,11 @@ begin
    unbound := unbound + lib + ', ';
  if (unbound <> '') then
    Self.Log(Self, llErrors, 'Unbound: ' + unbound);
+end;
+
+procedure TF_Tester.B_Show_ConfigClick(Sender: TObject);
+begin
+ trakce.ShowConfigDialog();
 end;
 
 procedure TF_Tester.B_UnloadClick(Sender: TObject);

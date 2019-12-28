@@ -54,4 +54,31 @@ object F_Tester: TF_Tester
     TabOrder = 3
     OnClick = B_UnloadClick
   end
+  object B_DCC_Go: TButton
+    Left = 8
+    Top = 216
+    Width = 75
+    Height = 25
+    Caption = 'DCC Go'
+    TabOrder = 4
+    OnClick = B_DCC_GoClick
+  end
+  object B_DCC_Stop: TButton
+    Left = 89
+    Top = 216
+    Width = 75
+    Height = 25
+    Caption = 'DCC Stop'
+    TabOrder = 5
+    OnClick = B_DCC_StopClick
+  end
+  object B_Show_Config: TButton
+    Left = 168
+    Top = 216
+    Width = 75
+    Height = 25
+    Caption = 'Show config'
+    TabOrder = 6
+    OnClick = B_Show_ConfigClick
+  end
 end
