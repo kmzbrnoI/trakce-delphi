@@ -160,6 +160,8 @@ type
      procedure LoadLib(path:string);
      procedure UnloadLib();
 
+     class function LogLevelToString(ll:TTrkLogLevel):string;
+
      ////////////////////////////////////////////////////////////////////
 
      // dialogs
@@ -522,6 +524,23 @@ class function TTrakceIFace.Callback(callback:TCommandCallbackFunc = nil; data:P
 begin
  Result.callback := callback;
  Result.data := data;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class function TTrakceIFace.LogLevelToString(ll:TTrkLogLevel):string;
+begin
+ case (ll) of
+   llNo: Result := 'No';
+   llErrors: Result := 'Err';
+   llWarnings: Result := 'Warn';
+   llInfo: Result := 'Info';
+   llCommands: Result := 'Cmd';
+   llRawCommands: Result := 'Raw';
+   llDebug: Result := 'Debug';
+ else
+   Result := '?';
+ end;
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
