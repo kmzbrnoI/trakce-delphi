@@ -32,6 +32,8 @@ type
     procedure OnAppException(Sender: TObject; E: Exception);
     procedure OnTrackStatusChanged(Sender: TObject; status: TTrkStatus);
     procedure OnLocoStolen(Sender: TObject; addr: Word);
+    procedure OnTrkSetOk(Sender: TObject; data: Pointer);
+    procedure OnTrkSetError(Sender: TObject; data: Pointer);
   end;
 
 var
@@ -43,12 +45,14 @@ implementation
 
 procedure TF_Tester.B_DCC_GoClick(Sender: TObject);
 begin
- trakce.SetTrackStatus(TTrkStatus.tsOn, TTrakceIFace.Callback(), TTrakceIFace.Callback());
+ trakce.SetTrackStatus(TTrkStatus.tsOn, TTrakceIFace.Callback(Self.OnTrkSetOk),
+                       TTrakceIFace.Callback(Self.OnTrkSetError));
 end;
 
 procedure TF_Tester.B_DCC_StopClick(Sender: TObject);
 begin
- trakce.SetTrackStatus(TTrkStatus.tsOff, TTrakceIFace.Callback(), TTrakceIFace.Callback());
+ trakce.SetTrackStatus(TTrkStatus.tsOff, TTrakceIFace.Callback(Self.OnTrkSetOk),
+                       TTrakceIFace.Callback(Self.OnTrkSetError));
 end;
 
 procedure TF_Tester.B_LoadClick(Sender: TObject);
@@ -120,6 +124,16 @@ end;
 procedure TF_Tester.OnLocoStolen(Sender: TObject; addr: Word);
 begin
  Self.Log(Self, llInfo, 'Loco stolen: ' + IntToStr(addr));
+end;
+
+procedure TF_Tester.OnTrkSetOk(Sender: TObject; data: Pointer);
+begin
+ Self.Log(Self, llInfo, 'OK');
+end;
+
+procedure TF_Tester.OnTrkSetError(Sender: TObject; data: Pointer);
+begin
+ Self.Log(Self, llErrors, 'ERR');
 end;
 
 end.
