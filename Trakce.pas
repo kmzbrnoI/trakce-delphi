@@ -161,7 +161,8 @@ type
      procedure PickApiVersion();
 
      class function CallbackDll(const cb: TCb): TDllCb;
-     class function CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb): TDllCb;
+     class procedure CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
+     class procedure CallbackDllReferEachOther(var first: TDllCb; var second: TDllCb);
 
   public
 
@@ -491,8 +492,7 @@ begin
     raise ETrkFuncNotAssigned.Create('dllFuncSetTrackStatus not assigned');
   dllOk := CallbackDll(ok);
   dllErr := CallbackDll(err);
-  CallbackDllReferOther(dllOk, dllErr);
-  CallbackDllReferOther(dllErr, dllOk);
+  CallbackDllReferEachOther(dllOk, dllErr);
   dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
 end;
 
@@ -614,11 +614,17 @@ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTrakceIFace.CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb): TDllCb;
+class procedure TTrakceIFace.CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
 var pcb: ^TCb;
 begin
  pcb := dllCb.data;
  pcb^.other := other.data;
+end;
+
+class procedure TTrakceIFace.CallbackDllReferEachOther(var first: TDllCb; var second: TDllCb);
+begin
+ TTrakceIFace.CallbackDllReferOther(first, second);
+ TTrakceIFace.CallbackDllReferOther(second, first);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
