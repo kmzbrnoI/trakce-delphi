@@ -81,4 +81,22 @@ object F_Tester: TF_Tester
     TabOrder = 6
     OnClick = B_Show_ConfigClick
   end
+  object B_Open: TButton
+    Left = 8
+    Top = 256
+    Width = 75
+    Height = 25
+    Caption = 'Open'
+    TabOrder = 7
+    OnClick = B_OpenClick
+  end
+  object B_Close: TButton
+    Left = 89
+    Top = 256
+    Width = 75
+    Height = 25
+    Caption = 'Close'
+    TabOrder = 8
+    OnClick = B_CloseClick
+  end
 end

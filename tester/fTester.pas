@@ -15,6 +15,8 @@ type
     B_DCC_Go: TButton;
     B_DCC_Stop: TButton;
     B_Show_Config: TButton;
+    B_Open: TButton;
+    B_Close: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_LoadClick(Sender: TObject);
@@ -23,6 +25,8 @@ type
     procedure B_Show_ConfigClick(Sender: TObject);
     procedure B_DCC_GoClick(Sender: TObject);
     procedure B_DCC_StopClick(Sender: TObject);
+    procedure B_OpenClick(Sender: TObject);
+    procedure B_CloseClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -34,6 +38,11 @@ type
     procedure OnLocoStolen(Sender: TObject; addr: Word);
     procedure OnTrkSetOk(Sender: TObject; data: Pointer);
     procedure OnTrkSetError(Sender: TObject; data: Pointer);
+
+    procedure OnTrkBeforeOpen(Sender: TObject);
+    procedure OnTrkAfterOpen(Sender: TObject);
+    procedure OnTrkBeforeClose(Sender: TObject);
+    procedure OnTrkAfterClose(Sender: TObject);
   end;
 
 var
@@ -42,6 +51,11 @@ var
 implementation
 
 {$R *.dfm}
+
+procedure TF_Tester.B_CloseClick(Sender: TObject);
+begin
+ trakce.Disconnect();
+end;
 
 procedure TF_Tester.B_DCC_GoClick(Sender: TObject);
 begin
@@ -69,6 +83,11 @@ begin
    Self.Log(Self, llErrors, 'Unbound: ' + unbound);
 end;
 
+procedure TF_Tester.B_OpenClick(Sender: TObject);
+begin
+ trakce.Connect();
+end;
+
 procedure TF_Tester.B_Show_ConfigClick(Sender: TObject);
 begin
  trakce.ShowConfigDialog();
@@ -88,6 +107,10 @@ begin
  Self.trakce.OnLog := Self.Log;
  Self.trakce.OnTrackStatusChanged := Self.OnTrackStatusChanged;
  Self.trakce.OnLocoStolen := Self.OnLocoStolen;
+ Self.trakce.BeforeOpen := Self.OnTrkBeforeOpen;
+ Self.trakce.AfterOpen := Self.OnTrkAfterOpen;
+ Self.trakce.BeforeClose := Self.OnTrkBeforeClose;
+ Self.trakce.AfterClose := Self.OnTrkAfterClose;
 end;
 
 procedure TF_Tester.FormDestroy(Sender: TObject);
@@ -133,7 +156,27 @@ end;
 
 procedure TF_Tester.OnTrkSetError(Sender: TObject; data: Pointer);
 begin
- Self.Log(Self, llErrors, 'ERR');
+ Self.Log(Self, llErrors, 'ERR, data: ' + IntToStr(Integer(data)));
+end;
+
+procedure TF_Tester.OnTrkBeforeOpen(Sender: TObject);
+begin
+ Self.Log(Self, llInfo, 'BeforeOpen');
+end;
+
+procedure TF_Tester.OnTrkAfterOpen(Sender: TObject);
+begin
+ Self.Log(Self, llInfo, 'AfterOpen');
+end;
+
+procedure TF_Tester.OnTrkBeforeClose(Sender: TObject);
+begin
+ Self.Log(Self, llInfo, 'BeforeClose');
+end;
+
+procedure TF_Tester.OnTrkAfterClose(Sender: TObject);
+begin
+ Self.Log(Self, llInfo, 'AfterClose');
 end;
 
 end.
