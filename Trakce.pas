@@ -227,6 +227,7 @@ destructor TTrakceIFace.Destroy();
 
 procedure TTrakceIFace.Reset();
  begin
+  Self.dllHandle := 0;
   Self.mApiVersion := _TRK_API_SUPPORTED_VERSIONS[High(_TRK_API_SUPPORTED_VERSIONS)];
 
   dllFuncApiSupportsVersion := nil;
