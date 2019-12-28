@@ -295,8 +295,8 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
     raise ETrkCannotLoadLib.Create('Cannot load library!');
 
   // library API version
-  dllFuncApiSupportsVersion := TDllApiVersionAsker(GetProcAddress(dllHandle, 'ApiSupportsVersion'));
-  dllFuncApiSetVersion := TDllApiVersionSetter(GetProcAddress(dllHandle, 'ApiSetVersion'));
+  dllFuncApiSupportsVersion := TDllApiVersionAsker(GetProcAddress(dllHandle, 'apiSupportsVersion'));
+  dllFuncApiSetVersion := TDllApiVersionSetter(GetProcAddress(dllHandle, 'apiSetVersion'));
   if ((not Assigned(dllFuncApiSupportsVersion)) or (not Assigned(dllFuncApiSetVersion))) then
    begin
     Self.UnloadLib();
