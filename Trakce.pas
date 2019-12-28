@@ -102,6 +102,7 @@ type
   TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo:TTrkLocoInfo);
   TDllStdNotifyBind = procedure(event:TTrkStdNotifyEvent; data:Pointer); stdcall;
   TDllLogBind = procedure(event:TTrkLogEvent; data:Pointer); stdcall;
+  TDllTrackStatusChangedBind = procedure(event:TTrkStatusChangedEv; data:Pointer); stdcall;
 
   ///////////////////////////////////////////////////////////////////////////
 
@@ -145,6 +146,7 @@ type
     eAfterClose : TNotifyEvent;
 
     eOnLog : TLogEvent;
+    eOnTrackStatusChanged : TStatusChangedEv;
 
      procedure Reset();
      procedure PickApiVersion();
@@ -198,6 +200,7 @@ type
      property AfterClose:TNotifyEvent read eAfterClose write eAfterClose;
 
      property OnLog:TLogEvent read eOnLog write eOnLog;
+     property OnTrackStatusChanged:TStatusChangedEv read eOnTrackStatusChanged write eOnTrackStatusChanged;
 
      property Lib: string read dllName;
      property apiVersion: Cardinal read mApiVersion;
@@ -278,12 +281,19 @@ procedure dllOnLog(Sender: TObject; data:Pointer; logLevel:Integer; msg:PChar); 
     TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
  end;
 
+procedure dllOnTrackStatusChanged(Sender: TObject; data:Pointer; trkStatus:Integer); stdcall;
+ begin
+  if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
+    TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
+ end;
+
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
 procedure TTrakceIFace.LoadLib(path:string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
+    dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
  begin
   Self.unbound.Clear();
 
@@ -348,6 +358,10 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   else unbound.Add('bindAfterClose');
 
   // other events
+  dllFuncOnTrackStatusChanged := TDllTrackStatusChangedBind(GetProcAddress(dllHandle, 'bindOnTrackStatusChange'));
+  if (Assigned(dllFuncOnTrackStatusChanged)) then dllFuncOnTrackStatusChanged(@dllOnTrackStatusChanged, self)
+  else unbound.Add('bindOnTrackStatusChange');
+
   dllFuncOnLogBind := TDllLogBind(GetProcAddress(dllHandle, 'bindOnLog'));
   if (Assigned(dllFuncOnLogBind)) then dllFuncOnLogBind(@dllOnLog, self)
   else unbound.Add('bindOnLog');
