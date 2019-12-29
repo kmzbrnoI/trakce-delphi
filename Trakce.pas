@@ -207,6 +207,7 @@ type
      procedure Connect();
      procedure Disconnect();
      function Connected():boolean;
+     function ConnectedSafe():boolean;
 
      function TrackStatus():TTrkStatus;
      function TrackStatusSafe():TTrkStatus;
@@ -538,6 +539,15 @@ function TTrakceIFace.Connected():boolean;
   else
     Result := dllFuncConnected();
  end;
+
+function TTrakceIFace.ConnectedSafe():boolean;
+begin
+  if (not Assigned(dllFuncConnected)) then
+    Result := false
+  else
+    Result := dllFuncConnected();
+end;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
