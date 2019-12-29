@@ -102,6 +102,7 @@ type
   TDllFGeneral = function():Integer; stdcall;
   TDllFCard = function():Cardinal; stdcall;
   TDllBoolGetter = function():boolean; stdcall;
+  TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
   TDllApiVersionAsker = function(version: Integer):Boolean; stdcall;
   TDllApiVersionSetter = function(version: Integer):Integer; stdcall;
@@ -110,6 +111,11 @@ type
 
   TDllFLocoAcquire = procedure(addr: Word; acquired: TDllLocoAcquiredCallback; err: TDllCb); stdcall;
   TDllFLocoRelease = procedure(addr: Word; ok: TDllCb); stdcall;
+  TDllFLocoCallback = procedure(addr: Word; ok: TDllCb; err: TDllCb); stdcall;
+  TDllFLocoSetSpeed = procedure(addr: Word; speed: Integer; direction: Boolean; ok: TDllCb; err: TDllCb); stdcall;
+  TDllFLocoSetFunc = procedure(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
+
+  TDllFPomWriteCv = procedure(addr: Word; cv: Word; value: Byte; ok: TDllCb; err: TDllCb); stdcall;
 
   TDllStdNotifyBind = procedure(event: TTrkStdNotifyEvent; data: Pointer); stdcall;
   TDllLogBind = procedure(event: TTrkLogEvent; data:Pointer); stdcall;
@@ -151,6 +157,13 @@ type
 
     dllFuncLocoAcquire : TDllFLocoAcquire;
     dllFuncLocoRelease : TDllFLocoRelease;
+
+    dllFuncEmergencyStop : TDllPCallback;
+    dllFuncLocoEmergencyStop : TDllFLocoCallback;
+    dllFuncLocoSetSpeed : TDllFLocoSetSpeed;
+    dllFuncLocoSetFunc : TDllFLocoSetFunc;
+
+    dllFuncPomWriteCv : TDllFPomWriteCv;
 
     // ------------------------------------------------------------------
     // Events from TTrakceIFace
@@ -271,6 +284,13 @@ procedure TTrakceIFace.Reset();
 
   dllFuncLocoAcquire := nil;
   dllFuncLocoRelease := nil;
+
+  dllFuncEmergencyStop := nil;
+  dllFuncLocoEmergencyStop := nil;
+  dllFuncLocoSetSpeed := nil;
+  dllFuncLocoSetFunc := nil;
+
+  dllFuncPomWriteCv := nil;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,6 +421,20 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   if (not Assigned(dllFuncLocoAcquire)) then unbound.Add('locoAcquire');
   dllFuncLocoRelease := TDllFLocoRelease(GetProcAddress(dllHandle, 'locoRelease'));
   if (not Assigned(dllFuncLocoRelease)) then unbound.Add('locoRelease');
+
+  // loco
+  dllFuncEmergencyStop := TDllPCallback(GetProcAddress(dllHandle, 'emergencyStop'));
+  if (not Assigned(dllFuncEmergencyStop)) then unbound.Add('emergencyStop');
+  dllFuncLocoEmergencyStop := TDllFLocoCallback(GetProcAddress(dllHandle, 'locoEmergencyStop'));
+  if (not Assigned(dllFuncLocoEmergencyStop)) then unbound.Add('locoEmergencyStop');
+  dllFuncLocoSetSpeed := TDllFLocoSetSpeed(GetProcAddress(dllHandle, 'locoSetSpeed'));
+  if (not Assigned(dllFuncLocoSetSpeed)) then unbound.Add('locoSetSpeed');
+  dllFuncLocoSetFunc := TDllFLocoSetFunc(GetProcAddress(dllHandle, 'locoSetFunc'));
+  if (not Assigned(dllFuncLocoSetFunc)) then unbound.Add('locoSetFunc');
+
+  // pom
+  dllFuncPomWriteCv := TDllFPomWriteCv(GetProcAddress(dllHandle, 'pomWriteCv'));
+  if (not Assigned(dllFuncPomWriteCv)) then unbound.Add('pomWriteCv');
 
   // events
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
