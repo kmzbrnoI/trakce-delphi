@@ -216,9 +216,9 @@ type
      procedure LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
      procedure LocoRelease(addr: Word; ok: TCb);
 
-     procedure LocoSetSpeed(addr: Word; speed: Integer; direction: Integer; ok: TCb; err: TCb);
+     procedure LocoSetSpeed(addr: Word; speed: Integer; direction: Boolean; ok: TCb; err: TCb);
      procedure LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
-     procedure LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
+     procedure LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean; ok: TCb; err: TCb);
      procedure LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
 
      procedure PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
@@ -561,8 +561,14 @@ var dllOk, dllErr: TDllCb;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.EmergencyStop(ok: TCb; err: TCb);
+var dllOk, dllErr: TDllCb;
  begin
-
+  if (not Assigned(dllFuncEmergencyStop)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncEmergencyStop not assigned');
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
+  dllFuncEmergencyStop(dllOk, dllErr);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -584,30 +590,57 @@ procedure TTrakceIFace.LocoRelease(addr: Word; ok: TCb);
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
+var dllOk, dllErr: TDllCb;
  begin
-
+  if (not Assigned(dllFuncLocoEmergencyStop)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncLocoEmergencyStop not assigned');
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
+  dllFuncLocoEmergencyStop(addr, dllOk, dllErr);
  end;
 
-procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Integer; ok: TCb; err: TCb);
+procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Boolean; ok: TCb; err: TCb);
+var dllOk, dllErr: TDllCb;
  begin
-
+  if (not Assigned(dllFuncLocoSetSpeed)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncLocoSetSpeed not assigned');
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
+  dllFuncLocoSetSpeed(addr, speed, direction, dllOk, dllErr);
  end;
 
 procedure TTrakceIFace.LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
+var dllOk, dllErr: TDllCb;
  begin
-
+  if (not Assigned(dllFuncLocoSetFunc)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncLocoSetFunc not assigned');
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
+  dllFuncLocoSetFunc(addr, funcMask, funcState, dllOk, dllErr);
  end;
 
-procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
+procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean; ok: TCb; err: TCb);
+var fMask, fState: Cardinal;
  begin
-
+  fMask := 1 shl func;
+  fState := Integer(state) shl func;
+  Self.LocoSetFunc(addr, fMask, fState, ok, err);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
+var dllOk, dllErr: TDllCb;
  begin
-
+  if (not Assigned(dllFuncPomWriteCv)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncPomWriteCv not assigned');
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
+  dllFuncPomWriteCv(addr, cv, value, dllOk, dllErr);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////

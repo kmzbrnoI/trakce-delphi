@@ -20,16 +20,23 @@ object F_Tester: TF_Tester
   TextHeight = 13
   object Label1: TLabel
     Left = 448
-    Top = 183
+    Top = 359
     Width = 43
     Height = 13
     Caption = 'Loglevel:'
+  end
+  object Label2: TLabel
+    Left = 8
+    Top = 480
+    Width = 51
+    Height = 13
+    Caption = 'Loco addr:'
   end
   object M_Log: TMemo
     Left = 7
     Top = 8
     Width = 619
-    Height = 169
+    Height = 345
     ReadOnly = True
     ScrollBars = ssVertical
     TabOrder = 0
@@ -37,7 +44,7 @@ object F_Tester: TF_Tester
   end
   object E_Path: TEdit
     Left = 8
-    Top = 183
+    Top = 359
     Width = 257
     Height = 21
     TabOrder = 1
@@ -45,7 +52,7 @@ object F_Tester: TF_Tester
   end
   object B_Load: TButton
     Left = 271
-    Top = 183
+    Top = 359
     Width = 75
     Height = 25
     Caption = 'Load'
@@ -54,7 +61,7 @@ object F_Tester: TF_Tester
   end
   object B_Unload: TButton
     Left = 352
-    Top = 183
+    Top = 359
     Width = 75
     Height = 25
     Caption = 'Unload'
@@ -63,7 +70,7 @@ object F_Tester: TF_Tester
   end
   object B_DCC_Go: TButton
     Left = 8
-    Top = 216
+    Top = 392
     Width = 75
     Height = 25
     Caption = 'DCC Go'
@@ -72,7 +79,7 @@ object F_Tester: TF_Tester
   end
   object B_DCC_Stop: TButton
     Left = 89
-    Top = 216
+    Top = 392
     Width = 75
     Height = 25
     Caption = 'DCC Stop'
@@ -81,7 +88,7 @@ object F_Tester: TF_Tester
   end
   object B_Show_Config: TButton
     Left = 168
-    Top = 216
+    Top = 392
     Width = 75
     Height = 25
     Caption = 'Show config'
@@ -90,7 +97,7 @@ object F_Tester: TF_Tester
   end
   object B_Open: TButton
     Left = 8
-    Top = 256
+    Top = 432
     Width = 75
     Height = 25
     Caption = 'Open'
@@ -99,7 +106,7 @@ object F_Tester: TF_Tester
   end
   object B_Close: TButton
     Left = 89
-    Top = 256
+    Top = 432
     Width = 75
     Height = 25
     Caption = 'Close'
@@ -108,7 +115,7 @@ object F_Tester: TF_Tester
   end
   object CB_Loglevel: TComboBox
     Left = 497
-    Top = 183
+    Top = 359
     Width = 129
     Height = 21
     Style = csDropDownList
@@ -124,5 +131,33 @@ object F_Tester: TF_Tester
       'Commands'
       'Data'
       'Debug')
+  end
+  object SE_Loco_Addr: TSpinEdit
+    Left = 73
+    Top = 480
+    Width = 121
+    Height = 22
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 10
+    Value = 42
+  end
+  object B_Loco_Acquire: TButton
+    Left = 200
+    Top = 480
+    Width = 75
+    Height = 25
+    Caption = 'Acquire'
+    TabOrder = 11
+    OnClick = B_Loco_AcquireClick
+  end
+  object B_Loco_Release: TButton
+    Left = 281
+    Top = 480
+    Width = 75
+    Height = 25
+    Caption = 'Release'
+    TabOrder = 12
+    OnClick = B_Loco_ReleaseClick
   end
 end

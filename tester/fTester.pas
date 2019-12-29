@@ -19,6 +19,10 @@ type
     B_Close: TButton;
     Label1: TLabel;
     CB_Loglevel: TComboBox;
+    SE_Loco_Addr: TSpinEdit;
+    Label2: TLabel;
+    B_Loco_Acquire: TButton;
+    B_Loco_Release: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_LoadClick(Sender: TObject);
@@ -29,6 +33,8 @@ type
     procedure B_DCC_StopClick(Sender: TObject);
     procedure B_OpenClick(Sender: TObject);
     procedure B_CloseClick(Sender: TObject);
+    procedure B_Loco_AcquireClick(Sender: TObject);
+    procedure B_Loco_ReleaseClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -83,6 +89,16 @@ begin
    unbound := unbound + lib + ', ';
  if (unbound <> '') then
    Self.Log(Self, llErrors, 'Unbound: ' + unbound);
+end;
+
+procedure TF_Tester.B_Loco_AcquireClick(Sender: TObject);
+begin
+ trakce.LocoAcquire(Self.SE_Loco_Addr.Value, nil, TTrakceIFace.Callback(Self.OnTrkSetError));
+end;
+
+procedure TF_Tester.B_Loco_ReleaseClick(Sender: TObject);
+begin
+ trakce.LocoRelease(Self.SE_Loco_Addr.Value, TTrakceIFace.Callback(Self.OnTrkSetOk));
 end;
 
 procedure TF_Tester.B_OpenClick(Sender: TObject);
