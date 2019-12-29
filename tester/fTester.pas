@@ -4,7 +4,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Trakce, Spin;
+  Dialogs, StdCtrls, Trakce, Spin, ExtCtrls;
 
 type
   TF_Tester = class(TForm)
@@ -23,6 +23,15 @@ type
     Label2: TLabel;
     B_Loco_Acquire: TButton;
     B_Loco_Release: TButton;
+    SE_Speed: TSpinEdit;
+    Label3: TLabel;
+    RG_Direction: TRadioGroup;
+    B_Set_Speed: TButton;
+    SE_Func_Mask: TSpinEdit;
+    Label4: TLabel;
+    Label5: TLabel;
+    SE_Func_State: TSpinEdit;
+    B_Set_Func: TButton;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure B_LoadClick(Sender: TObject);
@@ -35,6 +44,8 @@ type
     procedure B_CloseClick(Sender: TObject);
     procedure B_Loco_AcquireClick(Sender: TObject);
     procedure B_Loco_ReleaseClick(Sender: TObject);
+    procedure B_Set_SpeedClick(Sender: TObject);
+    procedure B_Set_FuncClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -106,6 +117,18 @@ end;
 procedure TF_Tester.B_OpenClick(Sender: TObject);
 begin
  trakce.Connect();
+end;
+
+procedure TF_Tester.B_Set_FuncClick(Sender: TObject);
+begin
+ trakce.LocoSetFunc(Self.SE_Loco_Addr.Value, Self.SE_Func_Mask.Value, Self.SE_Func_State.Value,
+                    TTrakceIFace.Callback(Self.OnTrkSetOk), TTrakceIFace.Callback(Self.OnTrkSetError));
+end;
+
+procedure TF_Tester.B_Set_SpeedClick(Sender: TObject);
+begin
+ trakce.LocoSetSpeed(Self.SE_Loco_Addr.Value, Self.SE_Speed.Value, Self.RG_Direction.ItemIndex = 1,
+                     TTrakceIFace.Callback(Self.OnTrkSetOk), TTrakceIFace.Callback(Self.OnTrkSetError));
 end;
 
 procedure TF_Tester.B_Show_ConfigClick(Sender: TObject);

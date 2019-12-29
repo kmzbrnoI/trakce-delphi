@@ -5,7 +5,7 @@ object F_Tester: TF_Tester
   BorderIcons = [biSystemMenu, biMinimize]
   BorderStyle = bsSingle
   Caption = 'Tester trakce'
-  ClientHeight = 538
+  ClientHeight = 585
   ClientWidth = 634
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -31,6 +31,27 @@ object F_Tester: TF_Tester
     Width = 51
     Height = 13
     Caption = 'Loco addr:'
+  end
+  object Label3: TLabel
+    Left = 7
+    Top = 514
+    Width = 34
+    Height = 13
+    Caption = 'Speed:'
+  end
+  object Label4: TLabel
+    Left = 392
+    Top = 464
+    Width = 54
+    Height = 13
+    Caption = 'Func mask:'
+  end
+  object Label5: TLabel
+    Left = 392
+    Top = 512
+    Width = 55
+    Height = 13
+    Caption = 'Func state:'
   end
   object M_Log: TMemo
     Left = 7
@@ -159,5 +180,65 @@ object F_Tester: TF_Tester
     Caption = 'Release'
     TabOrder = 12
     OnClick = B_Loco_ReleaseClick
+  end
+  object SE_Speed: TSpinEdit
+    Left = 73
+    Top = 511
+    Width = 121
+    Height = 22
+    MaxValue = 28
+    MinValue = 0
+    TabOrder = 13
+    Value = 0
+  end
+  object RG_Direction: TRadioGroup
+    Left = 200
+    Top = 511
+    Width = 75
+    Height = 50
+    Caption = ' Direction '
+    ItemIndex = 0
+    Items.Strings = (
+      'Forward'
+      'Backward')
+    TabOrder = 14
+  end
+  object B_Set_Speed: TButton
+    Left = 281
+    Top = 514
+    Width = 75
+    Height = 25
+    Caption = 'Set speed'
+    TabOrder = 15
+    OnClick = B_Set_SpeedClick
+  end
+  object SE_Func_Mask: TSpinEdit
+    Left = 392
+    Top = 480
+    Width = 89
+    Height = 22
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 16
+    Value = 0
+  end
+  object SE_Func_State: TSpinEdit
+    Left = 392
+    Top = 528
+    Width = 89
+    Height = 22
+    MaxValue = 0
+    MinValue = 0
+    TabOrder = 17
+    Value = 0
+  end
+  object B_Set_Func: TButton
+    Left = 487
+    Top = 480
+    Width = 75
+    Height = 25
+    Caption = 'Set func'
+    TabOrder = 18
+    OnClick = B_Set_FuncClick
   end
 end
