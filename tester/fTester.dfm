@@ -120,9 +120,9 @@ object F_Tester: TF_Tester
     Height = 21
     Style = csDropDownList
     ItemHeight = 13
-    ItemIndex = 3
+    ItemIndex = 4
     TabOrder = 9
-    Text = 'Infos'
+    Text = 'Commands'
     Items.Strings = (
       'None'
       'Errors'

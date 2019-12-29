@@ -47,6 +47,8 @@ type
     procedure OnTrkSetOk(Sender: TObject; data: Pointer);
     procedure OnTrkSetError(Sender: TObject; data: Pointer);
 
+    procedure OnTrkLocoAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+
     procedure OnTrkBeforeOpen(Sender: TObject);
     procedure OnTrkAfterOpen(Sender: TObject);
     procedure OnTrkBeforeClose(Sender: TObject);
@@ -93,7 +95,7 @@ end;
 
 procedure TF_Tester.B_Loco_AcquireClick(Sender: TObject);
 begin
- trakce.LocoAcquire(Self.SE_Loco_Addr.Value, nil, TTrakceIFace.Callback(Self.OnTrkSetError));
+ trakce.LocoAcquire(Self.SE_Loco_Addr.Value, Self.OnTrkLocoAcquired, TTrakceIFace.Callback(Self.OnTrkSetError));
 end;
 
 procedure TF_Tester.B_Loco_ReleaseClick(Sender: TObject);
@@ -196,6 +198,13 @@ end;
 procedure TF_Tester.OnTrkAfterClose(Sender: TObject);
 begin
  Self.Log(Self, llInfo, 'AfterClose');
+end;
+
+procedure TF_Tester.OnTrkLocoAcquired(Sender: TObject; LocoInfo: TTrkLocoInfo);
+begin
+ Self.Log(Self, llInfo, 'Get loco info: addr: ' + IntToStr(LocoInfo.addr) +
+          ', speed: ' + IntToStr(LocoInfo.speed) + ', dir: ' + BoolToStr(LocoInfo.direction) +
+          ', func: ' + IntToStr(LocoInfo.functions));
 end;
 
 end.

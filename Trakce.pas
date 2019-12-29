@@ -213,7 +213,7 @@ type
 
      procedure EmergencyStop(ok: TCb; err: TCb);
 
-     procedure LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
+     procedure LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; err: TCb);
      procedure LocoRelease(addr: Word; ok: TCb);
 
      procedure LocoSetSpeed(addr: Word; speed: Integer; direction: Boolean; ok: TCb; err: TCb);
@@ -573,10 +573,11 @@ var dllOk, dllErr: TDllCb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
+procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; err: TCb);
  begin
   if (not Assigned(dllFuncLocoAcquire)) then
     raise ETrkFuncNotAssigned.Create('dllFuncLocoAcquire not assigned');
+  acquiredCallbacks.AddOrSetValue(addr, callback);
   dllFuncLocoAcquire(addr, dllLocoAcquiredCallback, CallbackDll(err));
  end;
 
