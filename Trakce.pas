@@ -83,8 +83,9 @@ type
 
   TTrkStdNotifyEvent = procedure (Sender: TObject; data: Pointer); stdcall;
   TTrkLogEvent = procedure (Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
-  TTrkStatusChangedEv = procedure (Sender: TObject; data: Pointer; trkStatus: Integer);
-  TTrkLocoEv = procedure (Sender: TObject; data: Pointer; addr: Word);
+  TTrkStatusChangedEv = procedure (Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
+  TTrkLocoEv = procedure (Sender: TObject; data: Pointer; addr: Word); stdcall;
+  TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
 
   ///////////////////////////////////////////////////////////////////////////
   // Events called from TTrakceIFace to parent:
@@ -92,6 +93,7 @@ type
   TLogEvent = procedure (Sender: TObject; logLevel: TTrkLogLevel; msg:string) of object;
   TStatusChangedEv = procedure (Sender: TObject; trkStatus: TTrkStatus) of object;
   TLocoEv = procedure (Sender: TObject; addr: Word) of object;
+  TLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo) of object;
 
   ///////////////////////////////////////////////////////////////////////////
   // Prototypes of functions called to library:
@@ -106,7 +108,9 @@ type
 
   TDllFSetTrackStatus = procedure(trkStatus: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
 
-  TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo);
+  TDllFLocoAcquire = procedure(addr: Word; acquired: TDllLocoAcquiredCallback; err: TDllCb); stdcall;
+  TDllFLocoRelease = procedure(addr: Word; ok: TDllCb); stdcall;
+
   TDllStdNotifyBind = procedure(event: TTrkStdNotifyEvent; data: Pointer); stdcall;
   TDllLogBind = procedure(event: TTrkLogEvent; data:Pointer); stdcall;
   TDllTrackStatusChangedBind = procedure(event: TTrkStatusChangedEv; data: Pointer); stdcall;
@@ -144,6 +148,9 @@ type
 
     dllFuncTrackStatus : TDllFCard;
     dllFuncSetTrackStatus : TDllFSetTrackStatus;
+
+    dllFuncLocoAcquire : TDllFLocoAcquire;
+    dllFuncLocoRelease : TDllFLocoRelease;
 
     // ------------------------------------------------------------------
     // Events from TTrakceIFace
@@ -221,6 +228,8 @@ type
 
   end;
 
+var
+    acquiredCallbacks: TDictionary<Word, TLocoAcquiredCallback>;
 
 implementation
 
@@ -259,6 +268,9 @@ procedure TTrakceIFace.Reset();
 
   dllFuncTrackStatus := nil;
   dllFuncSetTrackStatus := nil;
+
+  dllFuncLocoAcquire := nil;
+  dllFuncLocoRelease := nil;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -310,15 +322,26 @@ procedure dllOnLocoStolen(Sender: TObject; data: Pointer; addr: Word); stdcall;
 procedure dllCallback(Sender: TObject; data: Pointer); stdcall;
 var pcb: ^TCb;
     cb: TCb;
-begin
- pcb := data;
- cb := pcb^;
- if (cb.other <> nil) then
-   FreeMem(cb.other);
- FreeMem(pcb);
- if (Assigned(cb.callback)) then
-   cb.callback(Sender, cb.data);
-end;
+ begin
+  pcb := data;
+  cb := pcb^;
+  if (cb.other <> nil) then
+    FreeMem(cb.other);
+  FreeMem(pcb);
+  if (Assigned(cb.callback)) then
+    cb.callback(Sender, cb.data);
+ end;
+
+procedure dllLocoAcquiredCallback(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
+var callback: TLocoAcquiredCallback;
+ begin
+  if ((acquiredCallbacks.ContainsKey(LocoInfo.addr)) and (Assigned(acquiredCallbacks[LocoInfo.addr]))) then
+   begin
+    callback := acquiredCallbacks[LocoInfo.addr];
+    acquiredCallbacks.Remove(LocoInfo.addr);
+    callback(Sender, LocoInfo);
+   end;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
@@ -373,6 +396,11 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllFuncSetTrackStatus := TDllFSetTrackStatus(GetProcAddress(dllHandle, 'setTrackStatus'));
   if (not Assigned(dllFuncSetTrackStatus)) then unbound.Add('setTrackStatus');
 
+  // loco acquire/release
+  dllFuncLocoAcquire := TDllFLocoAcquire(GetProcAddress(dllHandle, 'locoAcquire'));
+  if (not Assigned(dllFuncLocoAcquire)) then unbound.Add('locoAcquire');
+  dllFuncLocoRelease := TDllFLocoRelease(GetProcAddress(dllHandle, 'locoRelease'));
+  if (not Assigned(dllFuncLocoRelease)) then unbound.Add('locoRelease');
 
   // events
   dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
@@ -478,156 +506,166 @@ function TTrakceIFace.Connected():boolean;
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrakceIFace.TrackStatus():TTrkStatus;
-begin
+ begin
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
   else
     raise ETrkFuncNotAssigned.Create('dllFuncTrackStatus not assigned');
-end;
+ end;
 
 procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
-begin
+ begin
   if (not Assigned(dllFuncSetTrackStatus)) then
     raise ETrkFuncNotAssigned.Create('dllFuncSetTrackStatus not assigned');
   dllOk := CallbackDll(ok);
   dllErr := CallbackDll(err);
   CallbackDllReferEachOther(dllOk, dllErr);
   dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
-end;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.EmergencyStop(ok: TCb; err: TCb);
-begin
+ begin
 
-end;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TDllLocoAcquiredCallback; err: TCb);
-begin
-
-end;
+ begin
+  if (not Assigned(dllFuncLocoAcquire)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncLocoAcquire not assigned');
+  dllFuncLocoAcquire(addr, dllLocoAcquiredCallback, CallbackDll(err));
+ end;
 
 procedure TTrakceIFace.LocoRelease(addr: Word; ok: TCb);
-begin
-
-end;
+ begin
+  if (not Assigned(dllFuncLocoRelease)) then
+    raise ETrkFuncNotAssigned.Create('dllFuncLocoRelease not assigned');
+  dllFuncLocoRelease(addr, CallbackDll(ok));
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
-begin
+ begin
 
-end;
+ end;
 
 procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Integer; ok: TCb; err: TCb);
-begin
+ begin
 
-end;
+ end;
 
 procedure TTrakceIFace.LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
-begin
+ begin
 
-end;
+ end;
 
 procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean);
-begin
+ begin
 
-end;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
-begin
+ begin
 
-end;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.IsApiVersionSupport(version:Cardinal):Boolean;
 var i:Integer;
-begin
- for i := Low(_TRK_API_SUPPORTED_VERSIONS) to High(_TRK_API_SUPPORTED_VERSIONS) do
-   if (_TRK_API_SUPPORTED_VERSIONS[i] = version) then
-     Exit(true);
- Result := false;
-end;
+ begin
+  for i := Low(_TRK_API_SUPPORTED_VERSIONS) to High(_TRK_API_SUPPORTED_VERSIONS) do
+    if (_TRK_API_SUPPORTED_VERSIONS[i] = version) then
+      Exit(true);
+  Result := false;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PickApiVersion();
 var i:Integer;
-begin
- for i := High(_TRK_API_SUPPORTED_VERSIONS) downto Low(_TRK_API_SUPPORTED_VERSIONS) do
-  begin
-   if (Self.dllFuncApiSupportsVersion(_TRK_API_SUPPORTED_VERSIONS[i])) then
-    begin
-     Self.mApiVersion := _TRK_API_SUPPORTED_VERSIONS[i];
-     if (Self.dllFuncApiSetVersion(Self.mApiVersion) <> 0) then
-       raise ETrkCannotLoadLib.Create('ApiSetVersion returned nonzero result!');
-     Exit();
-    end;
-  end;
+ begin
+  for i := High(_TRK_API_SUPPORTED_VERSIONS) downto Low(_TRK_API_SUPPORTED_VERSIONS) do
+   begin
+    if (Self.dllFuncApiSupportsVersion(_TRK_API_SUPPORTED_VERSIONS[i])) then
+     begin
+      Self.mApiVersion := _TRK_API_SUPPORTED_VERSIONS[i];
+      if (Self.dllFuncApiSetVersion(Self.mApiVersion) <> 0) then
+        raise ETrkCannotLoadLib.Create('ApiSetVersion returned nonzero result!');
+      Exit();
+     end;
+   end;
 
- raise ETrkUnsupportedApiVersion.Create('Library does not support any of the supported versions');
-end;
+  raise ETrkUnsupportedApiVersion.Create('Library does not support any of the supported versions');
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil):TCommandCallback;
-begin
- Result.callback := callback;
- Result.data := data;
-end;
+ begin
+  Result.callback := callback;
+  Result.data := data;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.LogLevelToString(ll: TTrkLogLevel):string;
-begin
- case (ll) of
-   llNo: Result := 'No';
-   llErrors: Result := 'Err';
-   llWarnings: Result := 'Warn';
-   llInfo: Result := 'Info';
-   llCommands: Result := 'Cmd';
-   llRawCommands: Result := 'Raw';
-   llDebug: Result := 'Debug';
- else
-   Result := '?';
+ begin
+  case (ll) of
+    llNo: Result := 'No';
+    llErrors: Result := 'Err';
+    llWarnings: Result := 'Warn';
+    llInfo: Result := 'Info';
+    llCommands: Result := 'Cmd';
+    llRawCommands: Result := 'Raw';
+    llDebug: Result := 'Debug';
+  else
+    Result := '?';
+  end;
  end;
-end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.CallbackDll(const cb: TCb): TDllCb;
 var pcb: ^TCb;
-begin
- GetMem(pcb, sizeof(TCb));
- pcb^.callback := cb.callback;
- pcb^.data := cb.data;
- pcb^.other := nil;
- Result.data := pcb;
- Result.callback := dllCallback;
-end;
+ begin
+  GetMem(pcb, sizeof(TCb));
+  pcb^.callback := cb.callback;
+  pcb^.data := cb.data;
+  pcb^.other := nil;
+  Result.data := pcb;
+  Result.callback := dllCallback;
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TTrakceIFace.CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
 var pcb: ^TCb;
-begin
- pcb := dllCb.data;
- pcb^.other := other.data;
-end;
+ begin
+  pcb := dllCb.data;
+  pcb^.other := other.data;
+ end;
 
 class procedure TTrakceIFace.CallbackDllReferEachOther(var first: TDllCb; var second: TDllCb);
-begin
- TTrakceIFace.CallbackDllReferOther(first, second);
- TTrakceIFace.CallbackDllReferOther(second, first);
-end;
+ begin
+  TTrakceIFace.CallbackDllReferOther(first, second);
+  TTrakceIFace.CallbackDllReferOther(second, first);
+ end;
 
 ////////////////////////////////////////////////////////////////////////////////
+
+initialization
+  acquiredCallbacks := TDictionary<Word, TLocoAcquiredCallback>.Create();
+
+finalization
+  acquiredCallbacks.Free();
 
 end.//unit
 
