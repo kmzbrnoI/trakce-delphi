@@ -209,6 +209,7 @@ type
      function Connected():boolean;
 
      function TrackStatus():TTrkStatus;
+     function TrackStatusSafe():TTrkStatus;
      procedure SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 
      procedure EmergencyStop(); overload;
@@ -546,6 +547,14 @@ function TTrakceIFace.TrackStatus():TTrkStatus;
     Result := TTrkStatus(dllFuncTrackStatus())
   else
     raise ETrkFuncNotAssigned.Create('dllFuncTrackStatus not assigned');
+ end;
+
+function TTrakceIFace.TrackStatusSafe():TTrkStatus;
+ begin
+  if (Assigned(dllFuncTrackStatus)) then
+    Result := TTrkStatus(dllFuncTrackStatus())
+  else
+    Result := TTrkStatus.tsUnknown;
  end;
 
 procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
