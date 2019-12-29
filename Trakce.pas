@@ -211,7 +211,8 @@ type
      function TrackStatus():TTrkStatus;
      procedure SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 
-     procedure EmergencyStop(ok: TCb; err: TCb);
+     procedure EmergencyStop(); overload;
+     procedure EmergencyStop(ok: TCb; err: TCb); overload;
 
      procedure LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; err: TCb);
      procedure LocoRelease(addr: Word; ok: TCb);
@@ -569,6 +570,11 @@ var dllOk, dllErr: TDllCb;
   dllErr := CallbackDll(err);
   CallbackDllReferEachOther(dllOk, dllErr);
   dllFuncEmergencyStop(dllOk, dllErr);
+ end;
+
+procedure TTrakceIFace.EmergencyStop();
+ begin
+  Self.EmergencyStop(Callback(), Callback());
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
