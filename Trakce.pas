@@ -218,7 +218,7 @@ type
 
      procedure LocoSetSpeed(addr: Word; speed: Integer; direction: Boolean; ok: TCb; err: TCb);
      procedure LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
-     procedure LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean; ok: TCb; err: TCb);
+     procedure LocoSetSingleFunc(addr: Word; func: Integer; funcState: Cardinal; ok: TCb; err: TCb);
      procedure LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
 
      procedure PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
@@ -623,12 +623,11 @@ var dllOk, dllErr: TDllCb;
   dllFuncLocoSetFunc(addr, funcMask, funcState, dllOk, dllErr);
  end;
 
-procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; state: Boolean; ok: TCb; err: TCb);
-var fMask, fState: Cardinal;
+procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; funcState: Cardinal; ok: TCb; err: TCb);
+var fMask: Cardinal;
  begin
   fMask := 1 shl func;
-  fState := Integer(state) shl func;
-  Self.LocoSetFunc(addr, fMask, fState, ok, err);
+  Self.LocoSetFunc(addr, fMask, funcState, ok, err);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
