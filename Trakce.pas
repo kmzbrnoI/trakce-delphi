@@ -135,6 +135,7 @@ type
     dllName: string;
     dllHandle: Cardinal;
     mApiVersion: Cardinal;
+    fOpening: Boolean;
 
     // ------------------------------------------------------------------
     // Functions called to library:
@@ -241,6 +242,7 @@ type
 
      property Lib: string read dllName;
      property apiVersion: Cardinal read mApiVersion;
+     property opening: Boolean read fOpening write fOpening;
 
   end;
 
@@ -271,6 +273,7 @@ procedure TTrakceIFace.Reset();
  begin
   Self.dllHandle := 0;
   Self.mApiVersion := _TRK_API_SUPPORTED_VERSIONS[High(_TRK_API_SUPPORTED_VERSIONS)];
+  Self.fOpening := false;
 
   dllFuncApiSupportsVersion := nil;
   dllFuncApiSetVersion := nil;
@@ -308,6 +311,7 @@ procedure dllBeforeOpen(Sender: TObject; data: Pointer); stdcall;
 
 procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
  begin
+  TTrakceIFace(data).opening := false;
   if (Assigned(TTrakceIFace(data).AfterOpen)) then
     TTrakceIFace(data).AfterOpen(TTrakceIFace(data));
  end;
@@ -508,6 +512,7 @@ var res:Integer;
   if (not Assigned(dllFuncConnect)) then
     raise ETrkFuncNotAssigned.Create('dllFuncConnect not assigned');
 
+  Self.opening := true;
   res := dllFuncConnect();
 
   if (res = TRK_ALREADY_OPENNED) then
