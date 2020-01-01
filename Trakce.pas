@@ -184,6 +184,7 @@ type
      class function CallbackDll(const cb: TCb): TDllCb;
      class procedure CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
      class procedure CallbackDllReferEachOther(var first: TDllCb; var second: TDllCb);
+     class procedure CallbacksDll(const ok: TCb; const err: TCb; var dllOk: TDllCb; var dllErr: TDllCb);
 
   public
 
@@ -577,9 +578,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncSetTrackStatus)) then
     raise ETrkFuncNotAssigned.Create('dllFuncSetTrackStatus not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
  end;
 
@@ -590,9 +589,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncEmergencyStop)) then
     raise ETrkFuncNotAssigned.Create('dllFuncEmergencyStop not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncEmergencyStop(dllOk, dllErr);
  end;
 
@@ -625,9 +622,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoEmergencyStop)) then
     raise ETrkFuncNotAssigned.Create('dllFuncLocoEmergencyStop not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoEmergencyStop(addr, dllOk, dllErr);
  end;
 
@@ -636,9 +631,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoSetSpeed)) then
     raise ETrkFuncNotAssigned.Create('dllFuncLocoSetSpeed not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetSpeed(addr, speed, direction, dllOk, dllErr);
  end;
 
@@ -647,9 +640,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoSetFunc)) then
     raise ETrkFuncNotAssigned.Create('dllFuncLocoSetFunc not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetFunc(addr, funcMask, funcState, dllOk, dllErr);
  end;
 
@@ -667,9 +658,7 @@ var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncPomWriteCv)) then
     raise ETrkFuncNotAssigned.Create('dllFuncPomWriteCv not assigned');
-  dllOk := CallbackDll(ok);
-  dllErr := CallbackDll(err);
-  CallbackDllReferEachOther(dllOk, dllErr);
+  CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncPomWriteCv(addr, cv, value, dllOk, dllErr);
  end;
 
@@ -754,6 +743,13 @@ class procedure TTrakceIFace.CallbackDllReferEachOther(var first: TDllCb; var se
  begin
   TTrakceIFace.CallbackDllReferOther(first, second);
   TTrakceIFace.CallbackDllReferOther(second, first);
+ end;
+
+class procedure TTrakceIFace.CallbacksDll(const ok: TCb; const err: TCb; var dllOk: TDllCb; var dllErr: TDllCb);
+ begin
+  dllOk := CallbackDll(ok);
+  dllErr := CallbackDll(err);
+  CallbackDllReferEachOther(dllOk, dllErr);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
