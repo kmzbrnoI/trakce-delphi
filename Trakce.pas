@@ -77,6 +77,7 @@ type
     other: ^TCommandCallback;
   end;
   TCb = TCommandCallback;
+  PTCb = ^TCb;
 
   ///////////////////////////////////////////////////////////////////////////
   // Events called from library to TTrakceIFace:
@@ -231,6 +232,7 @@ type
      class function IsApiVersionSupport(version:Cardinal):Boolean;
 
      class function Callback(callback:TCommandCallbackFunc = nil; data:Pointer = nil):TCommandCallback;
+     class procedure Callbacks(const ok: TCb; const err: TCb; var pOk: PTCb; var pErr: PTCb);
 
      property BeforeOpen: TNotifyEvent read eBeforeOpen write eBeforeOpen;
      property AfterOpen: TNotifyEvent read eAfterOpen write eAfterOpen;
@@ -698,6 +700,17 @@ class function TTrakceIFace.Callback(callback: TCommandCallbackFunc = nil; data:
  begin
   Result.callback := callback;
   Result.data := data;
+ end;
+
+class procedure TTrakceIFace.Callbacks(const ok: TCb; const err: TCb; var pOk: PTCb; var pErr: PTCb);
+ begin
+  GetMem(pOk, sizeof(TCb));
+  GetMem(pErr, sizeof(TCb));
+
+  pOk^ := ok;
+  pErr^ := err;
+  pOk^.other := Pointer(pErr);
+  pErr^.other := Pointer(pOk);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
