@@ -105,8 +105,8 @@ type
   TDllBoolGetter = function():boolean; stdcall;
   TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
-  TDllApiVersionAsker = function(version: Integer):Boolean; stdcall;
-  TDllApiVersionSetter = function(version: Integer):Integer; stdcall;
+  TDllApiVersionAsker = function(version: Cardinal):Boolean; stdcall;
+  TDllApiVersionSetter = function(version: Cardinal):Integer; stdcall;
 
   TDllFSetTrackStatus = procedure(trkStatus: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
 
