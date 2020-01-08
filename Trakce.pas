@@ -549,12 +549,12 @@ function TTrakceIFace.Connected():boolean;
  end;
 
 function TTrakceIFace.ConnectedSafe():boolean;
-begin
+ begin
   if (not Assigned(dllFuncConnected)) then
     Result := false
   else
     Result := dllFuncConnected();
-end;
+ end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
