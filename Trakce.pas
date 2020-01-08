@@ -498,7 +498,7 @@ procedure TTrakceIFace.ShowConfigDialog();
   if (Assigned(dllFuncShowConfigDialog)) then
     dllFuncShowConfigDialog()
   else
-    raise ETrkFuncNotAssigned.Create('dllFuncShowConfigDialog not assigned');
+    raise ETrkFuncNotAssigned.Create('showConfigDialog not assigned');
  end;
 
 function TTrakceIFace.HasDialog():boolean;
@@ -513,7 +513,7 @@ procedure TTrakceIFace.Connect();
 var res:Integer;
  begin
   if (not Assigned(dllFuncConnect)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncConnect not assigned');
+    raise ETrkFuncNotAssigned.Create('connect not assigned');
 
   Self.opening := true;
   res := dllFuncConnect();
@@ -530,7 +530,7 @@ procedure TTrakceIFace.Disconnect();
 var res:Integer;
  begin
   if (not Assigned(dllFuncDisconnect)) then
-    raise ETrkFuncNotAssigned.Create('FFuncClose not assigned');
+    raise ETrkFuncNotAssigned.Create('disconnect not assigned');
 
   res := dllFuncDisconnect();
 
@@ -543,7 +543,7 @@ var res:Integer;
 function TTrakceIFace.Connected():boolean;
  begin
   if (not Assigned(dllFuncConnected)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncConnected not assigned')
+    raise ETrkFuncNotAssigned.Create('connected not assigned')
   else
     Result := dllFuncConnected();
  end;
@@ -564,7 +564,7 @@ function TTrakceIFace.TrackStatus():TTrkStatus;
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
   else
-    raise ETrkFuncNotAssigned.Create('dllFuncTrackStatus not assigned');
+    raise ETrkFuncNotAssigned.Create('trackStatus not assigned');
  end;
 
 function TTrakceIFace.TrackStatusSafe():TTrkStatus;
@@ -579,7 +579,7 @@ procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncSetTrackStatus)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncSetTrackStatus not assigned');
+    raise ETrkFuncNotAssigned.Create('setTrackStatus not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
  end;
@@ -590,7 +590,7 @@ procedure TTrakceIFace.EmergencyStop(ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncEmergencyStop)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncEmergencyStop not assigned');
+    raise ETrkFuncNotAssigned.Create('emergencyStop not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncEmergencyStop(dllOk, dllErr);
  end;
@@ -605,7 +605,7 @@ procedure TTrakceIFace.EmergencyStop();
 procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; err: TCb);
  begin
   if (not Assigned(dllFuncLocoAcquire)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncLocoAcquire not assigned');
+    raise ETrkFuncNotAssigned.Create('locoAcquire not assigned');
   acquiredCallbacks.AddOrSetValue(addr, callback);
   dllFuncLocoAcquire(addr, dllLocoAcquiredCallback, CallbackDll(err));
  end;
@@ -613,7 +613,7 @@ procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; 
 procedure TTrakceIFace.LocoRelease(addr: Word; ok: TCb);
  begin
   if (not Assigned(dllFuncLocoRelease)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncLocoRelease not assigned');
+    raise ETrkFuncNotAssigned.Create('locoRelease not assigned');
   dllFuncLocoRelease(addr, CallbackDll(ok));
  end;
 
@@ -623,7 +623,7 @@ procedure TTrakceIFace.LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoEmergencyStop)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncLocoEmergencyStop not assigned');
+    raise ETrkFuncNotAssigned.Create('locoEmergencyStop not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoEmergencyStop(addr, dllOk, dllErr);
  end;
@@ -632,7 +632,7 @@ procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Boole
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoSetSpeed)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncLocoSetSpeed not assigned');
+    raise ETrkFuncNotAssigned.Create('locoSetSpeed not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetSpeed(addr, speed, direction, dllOk, dllErr);
  end;
@@ -641,7 +641,7 @@ procedure TTrakceIFace.LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Ca
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncLocoSetFunc)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncLocoSetFunc not assigned');
+    raise ETrkFuncNotAssigned.Create('locoSetFunc not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetFunc(addr, funcMask, funcState, dllOk, dllErr);
  end;
@@ -659,7 +659,7 @@ procedure TTrakceIFace.PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; er
 var dllOk, dllErr: TDllCb;
  begin
   if (not Assigned(dllFuncPomWriteCv)) then
-    raise ETrkFuncNotAssigned.Create('dllFuncPomWriteCv not assigned');
+    raise ETrkFuncNotAssigned.Create('pomWriteCv not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncPomWriteCv(addr, cv, value, dllOk, dllErr);
  end;
