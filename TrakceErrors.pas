@@ -35,6 +35,8 @@ interface
 uses SysUtils;
 
 const
+ TRK_FILE_CANNOT_ACCESS = 1010;
+ TRK_FILE_DEVICE_OPENED = 1011;
  TRK_ALREADY_OPENNED = 2001;
  TRK_CANNOT_OPEN_PORT = 2002;
  TRK_NOT_OPENED = 2011;
@@ -58,6 +60,9 @@ type
   ETrkNoLibLoaded = class(TrkException);
   ETrkUnsupportedApiVersion = class(TrkException);
 
+  ETrkCannotAccessFile = class(TrkException);
+  ETrkDeviceOpened = class(TrkException);
+
 implementation
 
 constructor ETrkGeneralException.Create();
@@ -66,3 +71,4 @@ begin
 end;
 
 end.
+

@@ -105,6 +105,8 @@ type
   TDllBoolGetter = function():boolean; stdcall;
   TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
+  TDllFileIOFunc = function(filename: PChar):Integer; stdcall;
+
   TDllApiVersionAsker = function(version: Cardinal):Boolean; stdcall;
   TDllApiVersionSetter = function(version: Cardinal):Integer; stdcall;
 
@@ -145,6 +147,10 @@ type
     dllFuncApiSupportsVersion : TDllApiVersionAsker;
     dllFuncApiSetVersion : TDllApiVersionSetter;
     dllFuncFeatures : TDllFCard;
+
+    // load & save config
+    dllFuncLoadConfig : TDllFileIOFunc;
+    dllFuncSaveConfig : TDllFileIOFunc;
 
     // dialogs
     dllFuncShowConfigDialog : TDllPGeneral;
@@ -195,12 +201,16 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadLib(path:string);
+     procedure LoadLib(path:string; configFn:string);
      procedure UnloadLib();
 
      class function LogLevelToString(ll: TTrkLogLevel): string;
 
      ////////////////////////////////////////////////////////////////////
+
+     // file I/O
+     procedure LoadConfig(fn:string);
+     procedure SaveConfig(fn:string);
 
      // dialogs
      procedure ShowConfigDialog();
@@ -281,6 +291,9 @@ procedure TTrakceIFace.Reset();
   dllFuncApiSupportsVersion := nil;
   dllFuncApiSetVersion := nil;
   dllFuncFeatures := nil;
+
+  dllFuncLoadConfig := nil;
+  dllFuncSaveConfig := nil;
 
   dllFuncShowConfigDialog := nil;
 
@@ -376,7 +389,7 @@ var callback: TLocoAcquiredCallback;
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
-procedure TTrakceIFace.LoadLib(path: string);
+procedure TTrakceIFace.LoadLib(path: string; configFn:string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
     dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
@@ -407,7 +420,12 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
     raise;
   end;
 
-  // one of te supported versions picked here
+  // one of the supported versions is surely picked
+  dllFuncLoadConfig := TDllFileIOFunc(GetProcAddress(dllHandle, 'loadConfig'));
+  if (not Assigned(dllFuncLoadConfig)) then unbound.Add('loadConfig');
+  dllFuncSaveConfig := TDllFileIOFunc(GetProcAddress(dllHandle, 'saveConfig'));
+  if (not Assigned(dllFuncSaveConfig)) then unbound.Add('saveConfig');
+
 
   // dialogs
   dllFuncShowConfigDialog := TDllPGeneral(GetProcAddress(dllHandle, 'showConfigDialog'));
@@ -475,6 +493,9 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllLocoEventBind := TDllLocoEventBind(GetProcAddress(dllHandle, 'bindOnLocoStolen'));
   if (Assigned(dllLocoEventBind)) then dllLocoEventBind(@dllOnLocoStolen, self)
   else unbound.Add('bindOnLocoStolen');
+
+  if (Assigned(dllFuncLoadConfig)) then
+    Self.LoadConfig(configFn);
  end;
 
 procedure TTrakceIFace.UnloadLib();
@@ -489,6 +510,40 @@ procedure TTrakceIFace.UnloadLib();
 ////////////////////////////////////////////////////////////////////////////////
 // Parent should call these methods:
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// file I/O
+
+procedure TTrakceIFace.LoadConfig(fn:string);
+var res:Integer;
+ begin
+  if (not Assigned(dllFuncLoadConfig)) then
+    raise ETrkFuncNotAssigned.Create('loadConfig not assigned');
+
+  res := dllFuncLoadConfig(PChar(fn));
+
+  if (res = TRK_FILE_CANNOT_ACCESS) then
+    raise ETrkCannotAccessFile.Create('Cannot read file '+fn+'!')
+  else if (res = TRK_FILE_DEVICE_OPENED) then
+    raise ETrkDeviceOpened.Create('Cannot reload config, device opened!')
+  else if (res <> 0) then
+    raise ETrkGeneralException.Create();
+ end;
+
+procedure TTrakceIFace.SaveConfig(fn:string);
+var res:Integer;
+ begin
+  if (not Assigned(dllFuncSaveConfig)) then
+    raise ETrkFuncNotAssigned.Create('saveConfig not assigned');
+
+  res := dllFuncSaveConfig(PChar(fn));
+
+  if (res = TRK_FILE_CANNOT_ACCESS) then
+    raise ETrkCannotAccessFile.Create('Cannot write to file '+fn+'!')
+  else if (res <> 0) then
+    raise ETrkGeneralException.Create();
+ end;
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // dialogs:
