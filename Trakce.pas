@@ -523,7 +523,7 @@ var res:Integer;
   else if (res = TRK_CANNOT_OPEN_PORT) then
     raise ETrkCannotOpenPort.Create('Cannot open this port!')
   else if (res <> 0) then
-    raise ETrkGeneralException.Create('General exception in Trakce library!');
+    raise ETrkGeneralException.Create();
  end;
 
 procedure TTrakceIFace.Disconnect();
@@ -537,7 +537,7 @@ var res:Integer;
   if (res = TRK_NOT_OPENED) then
     raise ETrkNotOpened.Create('Device not opened!')
   else if (res <> 0) then
-    raise ETrkGeneralException.Create('General exception in Trakce library!');
+    raise ETrkGeneralException.Create();
  end;
 
 function TTrakceIFace.Connected():boolean;

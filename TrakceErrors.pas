@@ -43,7 +43,10 @@ const
 type
   TrkException = class(Exception);
 
-  ETrkGeneralException = class(TrkException);
+  ETrkGeneralException = class(TrkException)
+  public
+    constructor Create();
+  end;
 
   ETrkAlreadyOpened = class(TrkException);
   ETrkCannotOpenPort = class(TrkException);
@@ -56,5 +59,10 @@ type
   ETrkUnsupportedApiVersion = class(TrkException);
 
 implementation
+
+constructor ETrkGeneralException.Create();
+begin
+ inherited Create('General exception in Trakce library!');
+end;
 
 end.
