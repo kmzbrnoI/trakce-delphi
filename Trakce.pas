@@ -266,6 +266,31 @@ implementation
 
 ////////////////////////////////////////////////////////////////////////////////
 
+function GetLastOsError(_ErrCode: integer; out _Error: string; const _Format: string = ''): DWORD; overload;
+var
+  s: string;
+begin
+  Result := _ErrCode;
+  if Result <> ERROR_SUCCESS then
+    s := SysErrorMessage(Result)
+  else
+    s := ('unknown OS error');
+  if _Format <> '' then
+    try
+      _Error := Format(_Format, [Result, s])
+    except
+      _Error := s;
+    end else
+    _Error := s;
+end;
+
+function GetLastOsError(out _Error: string; const _Format: string = ''): DWORD; overload;
+begin
+  Result := GetLastOsError(GetLastError, _Error, _Format);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
 constructor TTrakceIFace.Create();
  begin
   inherited;
@@ -394,6 +419,8 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
     dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
     dllLocoEventBind: TDllLocoEventBind;
+    errorCode: dword;
+    errorStr: string;
  begin
   Self.unbound.Clear();
 
@@ -402,7 +429,10 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllName := path;
   dllHandle := LoadLibrary(PChar(dllName));
   if (dllHandle = 0) then
-    raise ETrkCannotLoadLib.Create('Cannot load library!');
+   begin
+    errorCode := GetLastOsError(errorStr);
+    raise ETrkCannotLoadLib.Create('Cannot load library: error '+IntToStr(errorCode)+': '+errorStr+'!');
+   end;
 
   // library API version
   dllFuncApiSupportsVersion := TDllApiVersionAsker(GetProcAddress(dllHandle, 'apiSupportsVersion'));
