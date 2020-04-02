@@ -61,6 +61,9 @@ type
   	speed: Byte;
   	maxSpeed: Byte;
   	functions: Cardinal;
+
+    class operator Equal(a, b: TTrkLocoInfo): Boolean;
+    class operator NotEqual(a, b: TTrkLocoInfo): Boolean;
   end;
 
   TDllCommandCallbackFunc = procedure (Sender: TObject; Data: Pointer); stdcall;
@@ -849,6 +852,19 @@ class procedure TTrakceIFace.CallbacksDll(const ok: TCb; const err: TCb; var dll
   dllErr := CallbackDll(err);
   CallbackDllReferEachOther(dllOk, dllErr);
  end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+class operator TTrkLocoInfo.Equal(a, b: TTrkLocoInfo): Boolean;
+begin
+ Result := (a.addr = b.addr) and (a.direction = b.direction) and (a.speed = b.speed) and
+           (a.maxSpeed = b.maxSpeed) and (a.functions = b.functions);
+end;
+
+class operator TTrkLocoInfo.NotEqual(a, b: TTrkLocoInfo): Boolean;
+begin
+ Result := not (a = b);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
