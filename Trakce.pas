@@ -37,6 +37,9 @@ const
     $0001 // v1.0
   );
 
+  _LOCO_DIR_FORWARD = false;
+  _LOCO_DIR_BACKWARD = true;
+
 type
   TTrkLogLevel = (
     llNo = 0,
