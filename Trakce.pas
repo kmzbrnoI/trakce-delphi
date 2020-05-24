@@ -61,7 +61,7 @@ type
   TTrkLocoInfo = record
   	addr: Word;
   	direction: Boolean;
-  	speed: Byte;
+  	step: Byte;
   	maxSpeed: Byte;
   	functions: Cardinal;
 
@@ -860,7 +860,7 @@ class procedure TTrakceIFace.CallbacksDll(const ok: TCb; const err: TCb; var dll
 
 class operator TTrkLocoInfo.Equal(a, b: TTrkLocoInfo): Boolean;
 begin
- Result := (a.addr = b.addr) and (a.direction = b.direction) and (a.speed = b.speed) and
+ Result := (a.addr = b.addr) and (a.direction = b.direction) and (a.step = b.step) and
            (a.maxSpeed = b.maxSpeed) and (a.functions = b.functions);
 end;
 
