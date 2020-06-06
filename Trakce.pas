@@ -352,69 +352,105 @@ procedure TTrakceIFace.Reset();
 
 procedure dllBeforeOpen(Sender: TObject; data: Pointer); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).BeforeOpen)) then
-    TTrakceIFace(data).BeforeOpen(TTrakceIFace(data));
+  try
+    if (Assigned(TTrakceIFace(data).BeforeOpen)) then
+      TTrakceIFace(data).BeforeOpen(TTrakceIFace(data));
+  except
+
+  end;
  end;
 
 procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
  begin
-  TTrakceIFace(data).opening := false;
-  if (Assigned(TTrakceIFace(data).AfterOpen)) then
-    TTrakceIFace(data).AfterOpen(TTrakceIFace(data));
+  try
+    TTrakceIFace(data).opening := false;
+    if (Assigned(TTrakceIFace(data).AfterOpen)) then
+      TTrakceIFace(data).AfterOpen(TTrakceIFace(data));
+  except
+
+  end;
  end;
 
 procedure dllBeforeClose(Sender: TObject; data: Pointer); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).BeforeClose)) then
-    TTrakceIFace(data).BeforeClose(TTrakceIFace(data));
+  try
+    if (Assigned(TTrakceIFace(data).BeforeClose)) then
+      TTrakceIFace(data).BeforeClose(TTrakceIFace(data));
+  except
+
+  end;
  end;
 
 procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).AfterClose)) then
-    TTrakceIFace(data).AfterClose(TTrakceIFace(data));
+  try
+    if (Assigned(TTrakceIFace(data).AfterClose)) then
+      TTrakceIFace(data).AfterClose(TTrakceIFace(data));
+  except
+
+  end;
  end;
 
 procedure dllOnLog(Sender: TObject; data: Pointer; logLevel:Integer; msg:PChar); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).OnLog)) then
-    TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
+  try
+    if (Assigned(TTrakceIFace(data).OnLog)) then
+      TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
+  except
+
+  end;
  end;
 
 procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus:Integer); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
-    TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
+  try
+    if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
+      TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
+  except
+
+  end;
  end;
 
 procedure dllOnLocoStolen(Sender: TObject; data: Pointer; addr: Word); stdcall;
  begin
-  if (Assigned(TTrakceIFace(data).OnLocoStolen)) then
-    TTrakceIFace(data).OnLocoStolen(TTrakceIFace(data), addr);
+  try
+    if (Assigned(TTrakceIFace(data).OnLocoStolen)) then
+      TTrakceIFace(data).OnLocoStolen(TTrakceIFace(data), addr);
+  except
+
+  end;
  end;
 
 procedure dllCallback(Sender: TObject; data: Pointer); stdcall;
 var pcb: ^TCb;
     cb: TCb;
  begin
-  pcb := data;
-  cb := pcb^;
-  if (cb.other <> nil) then
-    FreeMem(cb.other);
-  FreeMem(pcb);
-  if (Assigned(cb.callback)) then
-    cb.callback(Sender, cb.data);
+  try
+    pcb := data;
+    cb := pcb^;
+    if (cb.other <> nil) then
+      FreeMem(cb.other);
+    FreeMem(pcb);
+    if (Assigned(cb.callback)) then
+      cb.callback(Sender, cb.data);
+  except
+
+  end;
  end;
 
 procedure dllLocoAcquiredCallback(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
 var callback: TLocoAcquiredCallback;
  begin
-  if ((acquiredCallbacks.ContainsKey(LocoInfo.addr)) and (Assigned(acquiredCallbacks[LocoInfo.addr]))) then
-   begin
-    callback := acquiredCallbacks[LocoInfo.addr];
-    acquiredCallbacks.Remove(LocoInfo.addr);
-    callback(Sender, LocoInfo);
-   end;
+  try
+    if ((acquiredCallbacks.ContainsKey(LocoInfo.addr)) and (Assigned(acquiredCallbacks[LocoInfo.addr]))) then
+     begin
+      callback := acquiredCallbacks[LocoInfo.addr];
+      acquiredCallbacks.Remove(LocoInfo.addr);
+      callback(Sender, LocoInfo);
+     end;
+  except
+
+  end;
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
