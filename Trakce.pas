@@ -108,7 +108,7 @@ type
   TDllPGeneral = procedure(); stdcall;
   TDllFGeneral = function():Integer; stdcall;
   TDllFCard = function():Cardinal; stdcall;
-  TDllBoolGetter = function():boolean; stdcall;
+  TDllBoolGetter = function():Boolean; stdcall;
   TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
   TDllFileIOFunc = function(filename: PChar):Integer; stdcall;
@@ -220,13 +220,13 @@ type
 
      // dialogs
      procedure ShowConfigDialog();
-     function HasDialog():boolean;
+     function HasDialog():Boolean;
 
      // device open/close
      procedure Connect();
      procedure Disconnect();
-     function Connected():boolean;
-     function ConnectedSafe():boolean;
+     function Connected():Boolean;
+     function ConnectedSafe():Boolean;
 
      function TrackStatus():TTrkStatus;
      function TrackStatusSafe():TTrkStatus;
@@ -628,7 +628,7 @@ procedure TTrakceIFace.ShowConfigDialog();
     raise ETrkFuncNotAssigned.Create('showConfigDialog not assigned');
  end;
 
-function TTrakceIFace.HasDialog():boolean;
+function TTrakceIFace.HasDialog():Boolean;
 begin
  Result := Assigned(Self.dllFuncShowConfigDialog);
 end;
@@ -667,7 +667,7 @@ var res:Integer;
     raise ETrkGeneralException.Create();
  end;
 
-function TTrakceIFace.Connected():boolean;
+function TTrakceIFace.Connected():Boolean;
  begin
   if (not Assigned(dllFuncConnected)) then
     raise ETrkFuncNotAssigned.Create('connected not assigned')
@@ -675,7 +675,7 @@ function TTrakceIFace.Connected():boolean;
     Result := dllFuncConnected();
  end;
 
-function TTrakceIFace.ConnectedSafe():boolean;
+function TTrakceIFace.ConnectedSafe():Boolean;
  begin
   if (not Assigned(dllFuncConnected)) then
     Result := false
