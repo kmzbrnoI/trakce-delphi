@@ -97,7 +97,7 @@ type
   ///////////////////////////////////////////////////////////////////////////
   // Events called from TTrakceIFace to parent:
 
-  TLogEvent = procedure (Sender: TObject; logLevel: TTrkLogLevel; msg:string) of object;
+  TLogEvent = procedure (Sender: TObject; logLevel: TTrkLogLevel; msg: string) of object;
   TStatusChangedEv = procedure (Sender: TObject; trkStatus: TTrkStatus) of object;
   TLocoEv = procedure (Sender: TObject; addr: Word) of object;
   TLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo) of object;
@@ -106,15 +106,15 @@ type
   // Prototypes of functions called to library:
 
   TDllPGeneral = procedure(); stdcall;
-  TDllFGeneral = function():Integer; stdcall;
-  TDllFCard = function():Cardinal; stdcall;
-  TDllBoolGetter = function():Boolean; stdcall;
+  TDllFGeneral = function(): Integer; stdcall;
+  TDllFCard = function(): Cardinal; stdcall;
+  TDllBoolGetter = function(): Boolean; stdcall;
   TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
-  TDllFileIOFunc = function(filename: PChar):Integer; stdcall;
+  TDllFileIOFunc = function(filename: PChar): Integer; stdcall;
 
-  TDllApiVersionAsker = function(version: Cardinal):Boolean; stdcall;
-  TDllApiVersionSetter = function(version: Cardinal):Integer; stdcall;
+  TDllApiVersionAsker = function(version: Cardinal): Boolean; stdcall;
+  TDllApiVersionSetter = function(version: Cardinal): Integer; stdcall;
 
   TDllFSetTrackStatus = procedure(trkStatus: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
 
@@ -127,9 +127,9 @@ type
   TDllFPomWriteCv = procedure(addr: Word; cv: Word; value: Byte; ok: TDllCb; err: TDllCb); stdcall;
 
   TDllStdNotifyBind = procedure(event: TTrkStdNotifyEvent; data: Pointer); stdcall;
-  TDllLogBind = procedure(event: TTrkLogEvent; data:Pointer); stdcall;
+  TDllLogBind = procedure(event: TTrkLogEvent; data: Pointer); stdcall;
   TDllTrackStatusChangedBind = procedure(event: TTrkStatusChangedEv; data: Pointer); stdcall;
-  TDllLocoEventBind = procedure(event: TTrkLocoEv; data:Pointer); stdcall;
+  TDllLocoEventBind = procedure(event: TTrkLocoEv; data: Pointer); stdcall;
 
   ///////////////////////////////////////////////////////////////////////////
 
@@ -207,7 +207,7 @@ type
      constructor Create();
      destructor Destroy(); override;
 
-     procedure LoadLib(path:string; configFn:string);
+     procedure LoadLib(path: string; configFn: string);
      procedure UnloadLib();
 
      class function LogLevelToString(ll: TTrkLogLevel): string;
@@ -215,21 +215,21 @@ type
      ////////////////////////////////////////////////////////////////////
 
      // file I/O
-     procedure LoadConfig(fn:string);
-     procedure SaveConfig(fn:string);
+     procedure LoadConfig(fn: string);
+     procedure SaveConfig(fn: string);
 
      // dialogs
      procedure ShowConfigDialog();
-     function HasDialog():Boolean;
+     function HasDialog(): Boolean;
 
      // device open/close
      procedure Connect();
      procedure Disconnect();
-     function Connected():Boolean;
-     function ConnectedSafe():Boolean;
+     function Connected(): Boolean;
+     function ConnectedSafe(): Boolean;
 
-     function TrackStatus():TTrkStatus;
-     function TrackStatusSafe():TTrkStatus;
+     function TrackStatus(): TTrkStatus;
+     function TrackStatusSafe(): TTrkStatus;
      procedure SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 
      procedure EmergencyStop(); overload;
@@ -245,9 +245,9 @@ type
 
      procedure PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
 
-     class function IsApiVersionSupport(version:Cardinal):Boolean;
+     class function IsApiVersionSupport(version: Cardinal): Boolean;
 
-     class function Callback(callback:TCommandCallbackFunc = nil; data:Pointer = nil):TCommandCallback;
+     class function Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil): TCommandCallback;
      class procedure Callbacks(const ok: TCb; const err: TCb; var pOk: PTCb; var pErr: PTCb);
 
      property BeforeOpen: TNotifyEvent read eBeforeOpen write eBeforeOpen;
@@ -391,7 +391,7 @@ procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
   end;
  end;
 
-procedure dllOnLog(Sender: TObject; data: Pointer; logLevel:Integer; msg:PChar); stdcall;
+procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
  begin
   try
     if (Assigned(TTrakceIFace(data).OnLog)) then
@@ -401,7 +401,7 @@ procedure dllOnLog(Sender: TObject; data: Pointer; logLevel:Integer; msg:PChar);
   end;
  end;
 
-procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus:Integer); stdcall;
+procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
  begin
   try
     if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
@@ -456,7 +456,7 @@ var callback: TLocoAcquiredCallback;
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
-procedure TTrakceIFace.LoadLib(path: string; configFn:string);
+procedure TTrakceIFace.LoadLib(path: string; configFn: string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
     dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
@@ -586,8 +586,8 @@ procedure TTrakceIFace.UnloadLib();
 ////////////////////////////////////////////////////////////////////////////////
 // file I/O
 
-procedure TTrakceIFace.LoadConfig(fn:string);
-var res:Integer;
+procedure TTrakceIFace.LoadConfig(fn: string);
+var res: Integer;
  begin
   if (not Assigned(dllFuncLoadConfig)) then
     raise ETrkFuncNotAssigned.Create('loadConfig not assigned');
@@ -602,8 +602,8 @@ var res:Integer;
     raise ETrkGeneralException.Create();
  end;
 
-procedure TTrakceIFace.SaveConfig(fn:string);
-var res:Integer;
+procedure TTrakceIFace.SaveConfig(fn: string);
+var res: Integer;
  begin
   if (not Assigned(dllFuncSaveConfig)) then
     raise ETrkFuncNotAssigned.Create('saveConfig not assigned');
@@ -628,7 +628,7 @@ procedure TTrakceIFace.ShowConfigDialog();
     raise ETrkFuncNotAssigned.Create('showConfigDialog not assigned');
  end;
 
-function TTrakceIFace.HasDialog():Boolean;
+function TTrakceIFace.HasDialog(): Boolean;
 begin
  Result := Assigned(Self.dllFuncShowConfigDialog);
 end;
@@ -637,7 +637,7 @@ end;
 // open/close:
 
 procedure TTrakceIFace.Connect();
-var res:Integer;
+var res: Integer;
  begin
   if (not Assigned(dllFuncConnect)) then
     raise ETrkFuncNotAssigned.Create('connect not assigned');
@@ -654,7 +654,7 @@ var res:Integer;
  end;
 
 procedure TTrakceIFace.Disconnect();
-var res:Integer;
+var res: Integer;
  begin
   if (not Assigned(dllFuncDisconnect)) then
     raise ETrkFuncNotAssigned.Create('disconnect not assigned');
@@ -667,7 +667,7 @@ var res:Integer;
     raise ETrkGeneralException.Create();
  end;
 
-function TTrakceIFace.Connected():Boolean;
+function TTrakceIFace.Connected(): Boolean;
  begin
   if (not Assigned(dllFuncConnected)) then
     raise ETrkFuncNotAssigned.Create('connected not assigned')
@@ -675,7 +675,7 @@ function TTrakceIFace.Connected():Boolean;
     Result := dllFuncConnected();
  end;
 
-function TTrakceIFace.ConnectedSafe():Boolean;
+function TTrakceIFace.ConnectedSafe(): Boolean;
  begin
   if (not Assigned(dllFuncConnected)) then
     Result := false
@@ -686,7 +686,7 @@ function TTrakceIFace.ConnectedSafe():Boolean;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function TTrakceIFace.TrackStatus():TTrkStatus;
+function TTrakceIFace.TrackStatus(): TTrkStatus;
  begin
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
@@ -694,7 +694,7 @@ function TTrakceIFace.TrackStatus():TTrkStatus;
     raise ETrkFuncNotAssigned.Create('trackStatus not assigned');
  end;
 
-function TTrakceIFace.TrackStatusSafe():TTrkStatus;
+function TTrakceIFace.TrackStatusSafe(): TTrkStatus;
  begin
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
@@ -793,8 +793,8 @@ var dllOk, dllErr: TDllCb;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTrakceIFace.IsApiVersionSupport(version:Cardinal):Boolean;
-var i:Integer;
+class function TTrakceIFace.IsApiVersionSupport(version: Cardinal): Boolean;
+var i: Integer;
  begin
   for i := Low(_TRK_API_SUPPORTED_VERSIONS) to High(_TRK_API_SUPPORTED_VERSIONS) do
     if (_TRK_API_SUPPORTED_VERSIONS[i] = version) then
@@ -805,7 +805,7 @@ var i:Integer;
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PickApiVersion();
-var i:Integer;
+var i: Integer;
  begin
   for i := High(_TRK_API_SUPPORTED_VERSIONS) downto Low(_TRK_API_SUPPORTED_VERSIONS) do
    begin
@@ -823,7 +823,7 @@ var i:Integer;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTrakceIFace.Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil):TCommandCallback;
+class function TTrakceIFace.Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil): TCommandCallback;
  begin
   Result.callback := callback;
   Result.data := data;
@@ -842,7 +842,7 @@ class procedure TTrakceIFace.Callbacks(const ok: TCb; const err: TCb; var pOk: P
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class function TTrakceIFace.LogLevelToString(ll: TTrkLogLevel):string;
+class function TTrakceIFace.LogLevelToString(ll: TTrkLogLevel): string;
  begin
   case (ll) of
     llNo: Result := 'No';
