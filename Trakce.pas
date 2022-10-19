@@ -142,7 +142,7 @@ type
 
   private
     dllName: string;
-    dllHandle: Cardinal;
+    dllHandle: NativeUInt;
     mApiVersion: Cardinal;
     fOpening: Boolean;
 
