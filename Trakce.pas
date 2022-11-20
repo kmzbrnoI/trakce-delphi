@@ -33,8 +33,9 @@ uses
   SysUtils, Classes, Windows, TrakceErrors, Generics.Collections;
 
 const
-  _TRK_API_SUPPORTED_VERSIONS : array[0..0] of Cardinal = (
-    $0001 // v1.0
+  // Highest-priority version last
+  _TRK_API_SUPPORTED_VERSIONS : array[0..2] of Cardinal = (
+    $0001, $0100, $0101 // v0.1, v1.0, v1.1
   );
 
   _LOCO_DIR_FORWARD = false;
@@ -90,6 +91,7 @@ type
 
   TTrkStdNotifyEvent = procedure (Sender: TObject; data: Pointer); stdcall;
   TTrkLogEvent = procedure (Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
+  TTrkMsgEvent = procedure (Sender: TObject; msg: PChar); stdcall;
   TTrkStatusChangedEv = procedure (Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
   TTrkLocoEv = procedure (Sender: TObject; data: Pointer; addr: Word); stdcall;
   TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
@@ -97,7 +99,9 @@ type
   ///////////////////////////////////////////////////////////////////////////
   // Events called from TTrakceIFace to parent:
 
+  TErrorEvent = procedure(Sender: TObject; errMsg: string) of object;
   TLogEvent = procedure (Sender: TObject; logLevel: TTrkLogLevel; msg: string) of object;
+  TMsgEvent = procedure (Sender: TObject; msg: string) of object;
   TStatusChangedEv = procedure (Sender: TObject; trkStatus: TTrkStatus) of object;
   TLocoEv = procedure (Sender: TObject; addr: Word) of object;
   TLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo) of object;
@@ -128,6 +132,7 @@ type
 
   TDllStdNotifyBind = procedure(event: TTrkStdNotifyEvent; data: Pointer); stdcall;
   TDllLogBind = procedure(event: TTrkLogEvent; data: Pointer); stdcall;
+  TDllMsgBind = procedure(event: TTrkMsgEvent; data: Pointer); stdcall;
   TDllTrackStatusChangedBind = procedure(event: TTrkStatusChangedEv; data: Pointer); stdcall;
   TDllLocoEventBind = procedure(event: TTrkLocoEv; data: Pointer); stdcall;
 
@@ -145,6 +150,7 @@ type
     dllHandle: NativeUInt;
     mApiVersion: Cardinal;
     fOpening: Boolean;
+    openErrors: string;
 
     // ------------------------------------------------------------------
     // Functions called to library:
@@ -188,6 +194,7 @@ type
     eAfterClose : TNotifyEvent;
 
     eOnLog : TLogEvent;
+    eOnOpenError : TMsgEvent;
     eOnTrackStatusChanged : TStatusChangedEv;
     eOnLocoStolen : TLocoEv;
 
@@ -245,6 +252,8 @@ type
 
      procedure PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
 
+     function apiVersionStr(): string;
+
      class function IsApiVersionSupport(version: Cardinal): Boolean;
 
      class function Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil): TCommandCallback;
@@ -254,6 +263,7 @@ type
      property AfterOpen: TNotifyEvent read eAfterOpen write eAfterOpen;
      property BeforeClose: TNotifyEvent read eBeforeClose write eBeforeClose;
      property AfterClose: TNotifyEvent read eAfterClose write eAfterClose;
+     property OnOpenError: TMsgEvent read eOnOpenError write eOnOpenError;
 
      property OnLog: TLogEvent read eOnLog write eOnLog;
      property OnTrackStatusChanged: TStatusChangedEv read eOnTrackStatusChanged write eOnTrackStatusChanged;
@@ -384,6 +394,7 @@ procedure dllBeforeClose(Sender: TObject; data: Pointer); stdcall;
 procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
  begin
   try
+    TTrakceIFace(data).opening := false;
     if (Assigned(TTrakceIFace(data).AfterClose)) then
       TTrakceIFace(data).AfterClose(TTrakceIFace(data));
   except
@@ -396,6 +407,17 @@ procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar
   try
     if (Assigned(TTrakceIFace(data).OnLog)) then
       TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
+  except
+
+  end;
+ end;
+
+procedure dllOnOpenError(Sender: TObject; data: Pointer; msg: PChar); stdcall;
+ begin
+  try
+    TTrakceIFace(data).opening := false;
+    if (Assigned(TTrakceIFace(data).OnOpenError)) then
+      TTrakceIFace(data).OnOpenError(TTrakceIFace(data), msg);
   except
 
   end;
@@ -459,6 +481,7 @@ var callback: TLocoAcquiredCallback;
 procedure TTrakceIFace.LoadLib(path: string; configFn: string);
 var dllFuncStdNotifyBind: TDllStdNotifyBind;
     dllFuncOnLogBind: TDllLogBind;
+    dllFuncMsgBind: TDllMsgBind;
     dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
     dllLocoEventBind: TDllLocoEventBind;
     errorCode: dword;
@@ -562,6 +585,13 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   if (Assigned(dllFuncOnLogBind)) then dllFuncOnLogBind(@dllOnLog, self)
   else unbound.Add('bindOnLog');
 
+  if (Self.apiVersion >= $0101) then
+  begin
+    dllFuncMsgBind := TDllMsgBind(GetProcAddress(dllHandle, 'bindOnOpenError'));
+    if (Assigned(dllFuncMsgBind)) then dllFuncMsgBind(@dllOnOpenError, self)
+    else unbound.Add('bindOnOpenError');
+  end;
+
   dllLocoEventBind := TDllLocoEventBind(GetProcAddress(dllHandle, 'bindOnLocoStolen'));
   if (Assigned(dllLocoEventBind)) then dllLocoEventBind(@dllOnLocoStolen, self)
   else unbound.Add('bindOnLocoStolen');
@@ -643,6 +673,7 @@ var res: Integer;
     raise ETrkFuncNotAssigned.Create('connect not assigned');
 
   Self.opening := true;
+  Self.openErrors := '';
   res := dllFuncConnect();
 
   if (res = TRK_ALREADY_OPENNED) then
@@ -890,6 +921,13 @@ class procedure TTrakceIFace.CallbacksDll(const ok: TCb; const err: TCb; var dll
   dllOk := CallbackDll(ok);
   dllErr := CallbackDll(err);
   CallbackDllReferEachOther(dllOk, dllErr);
+ end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrakceIFace.apiVersionStr(): string;
+ begin
+  Result := IntToStr((Self.apiVersion shr 8) and $FF) + '.' + IntToStr(Self.apiVersion and $FF);
  end;
 
 ////////////////////////////////////////////////////////////////////////////////
