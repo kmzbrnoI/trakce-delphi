@@ -719,6 +719,9 @@ function TTrakceIFace.ConnectedSafe(): Boolean;
 
 function TTrakceIFace.TrackStatus(): TTrkStatus;
  begin
+  if (not Self.ConnectedSafe()) then
+    Exit(TTrkStatus.tsUnknown);
+
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
   else
@@ -727,6 +730,9 @@ function TTrakceIFace.TrackStatus(): TTrkStatus;
 
 function TTrakceIFace.TrackStatusSafe(): TTrkStatus;
  begin
+  if (not Self.ConnectedSafe()) then
+    Exit(TTrkStatus.tsUnknown);
+
   if (Assigned(dllFuncTrackStatus)) then
     Result := TTrkStatus(dllFuncTrackStatus())
   else
