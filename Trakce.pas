@@ -373,8 +373,9 @@ end;
 procedure dllBeforeOpen(Sender: TObject; data: Pointer); stdcall;
 begin
   try
-    if (Assigned(TTrakceIFace(data).BeforeOpen)) then
-      TTrakceIFace(data).BeforeOpen(TTrakceIFace(data));
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    if (Assigned(tif.BeforeOpen)) then
+      tif.BeforeOpen(tif);
   except
 
   end;
@@ -383,9 +384,10 @@ end;
 procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
 begin
   try
-    TTrakceIFace(data).opening := false;
-    if (Assigned(TTrakceIFace(data).AfterOpen)) then
-      TTrakceIFace(data).AfterOpen(TTrakceIFace(data));
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    tif.opening := false;
+    if (Assigned(tif.AfterOpen)) then
+      tif.AfterOpen(tif);
   except
 
   end;
@@ -394,8 +396,9 @@ end;
 procedure dllBeforeClose(Sender: TObject; data: Pointer); stdcall;
 begin
   try
-    if (Assigned(TTrakceIFace(data).BeforeClose)) then
-      TTrakceIFace(data).BeforeClose(TTrakceIFace(data));
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    if (Assigned(tif.BeforeClose)) then
+      tif.BeforeClose(tif);
   except
 
   end;
@@ -404,9 +407,11 @@ end;
 procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
 begin
   try
-    TTrakceIFace(data).opening := false;
-    if (Assigned(TTrakceIFace(data).AfterClose)) then
-      TTrakceIFace(data).AfterClose(TTrakceIFace(data));
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    tif.opening := false;
+    tif.emergency := (not tif.disconnectAllowed);
+    if (Assigned(tif.AfterClose)) then
+      tif.AfterClose(tif);
   except
 
   end;
@@ -415,8 +420,9 @@ end;
 procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
 begin
   try
-    if (Assigned(TTrakceIFace(data).OnLog)) then
-      TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    if (Assigned(tif.OnLog)) then
+      tif.OnLog(tif, TTrkLogLevel(logLevel), msg);
   except
 
   end;
@@ -425,9 +431,10 @@ end;
 procedure dllOnOpenError(Sender: TObject; data: Pointer; msg: PChar); stdcall;
 begin
   try
-    TTrakceIFace(data).opening := false;
-    if (Assigned(TTrakceIFace(data).OnOpenError)) then
-      TTrakceIFace(data).OnOpenError(TTrakceIFace(data), msg);
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    tif.opening := false;
+    if (Assigned(tif.OnOpenError)) then
+      tif.OnOpenError(tif, msg);
   except
 
   end;
@@ -436,8 +443,9 @@ end;
 procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
 begin
   try
-    if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
-      TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    if (Assigned(tif.OnTrackStatusChanged)) then
+      tif.OnTrackStatusChanged(tif, TTrkStatus(trkStatus));
   except
 
   end;
@@ -446,8 +454,9 @@ end;
 procedure dllOnLocoStolen(Sender: TObject; data: Pointer; addr: Word); stdcall;
 begin
   try
-    if (Assigned(TTrakceIFace(data).OnLocoStolen)) then
-      TTrakceIFace(data).OnLocoStolen(TTrakceIFace(data), addr);
+    var tif: TTrakceIFace := TTrakceIFace(data);
+    if (Assigned(tif.OnLocoStolen)) then
+      tif.OnLocoStolen(tif, addr);
   except
 
   end;
