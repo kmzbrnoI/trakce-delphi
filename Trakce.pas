@@ -5,7 +5,7 @@
 {
    LICENSE:
 
-   Copyright 2019-2020 Jan Horacek
+   Copyright 2019-2023 Jan Horacek
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -151,6 +151,8 @@ type
     mApiVersion: Cardinal;
     fOpening: Boolean;
     openErrors: string;
+    mEmergency: Boolean; // if external emergency stop is required due to failure
+    disconnectAllowed: Boolean;
 
     // ------------------------------------------------------------------
     // Functions called to library:
@@ -197,9 +199,11 @@ type
     eOnOpenError : TMsgEvent;
     eOnTrackStatusChanged : TStatusChangedEv;
     eOnLocoStolen : TLocoEv;
+    eEmergencyChanged : TNotifyEvent;
 
      procedure Reset();
      procedure PickApiVersion();
+     procedure SetEmergency(new: Boolean);
 
      class function CallbackDll(const cb: TCb): TDllCb;
      class procedure CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
@@ -264,6 +268,7 @@ type
      property BeforeClose: TNotifyEvent read eBeforeClose write eBeforeClose;
      property AfterClose: TNotifyEvent read eAfterClose write eAfterClose;
      property OnOpenError: TMsgEvent read eOnOpenError write eOnOpenError;
+     property OnEmergencyChanged: TNotifyEvent read eEmergencyChanged write eEmergencyChanged;
 
      property OnLog: TLogEvent read eOnLog write eOnLog;
      property OnTrackStatusChanged: TStatusChangedEv read eOnTrackStatusChanged write eOnTrackStatusChanged;
@@ -272,6 +277,7 @@ type
      property Lib: string read dllName;
      property apiVersion: Cardinal read mApiVersion;
      property opening: Boolean read fOpening write fOpening;
+     property emergency: Boolean read mEmergency write SetEmergency;
 
   end;
 
@@ -374,6 +380,7 @@ procedure dllBeforeOpen(Sender: TObject; data: Pointer); stdcall;
 begin
   try
     var tif: TTrakceIFace := TTrakceIFace(data);
+    tif.emergency := False;
     if (Assigned(tif.BeforeOpen)) then
       tif.BeforeOpen(tif);
   except
@@ -410,6 +417,7 @@ begin
     var tif: TTrakceIFace := TTrakceIFace(data);
     tif.opening := false;
     tif.emergency := (not tif.disconnectAllowed);
+    tif.disconnectAllowed := False;
     if (Assigned(tif.AfterClose)) then
       tif.AfterClose(tif);
   except
@@ -690,8 +698,10 @@ begin
   if (not Assigned(dllFuncConnect)) then
     raise ETrkFuncNotAssigned.Create('connect not assigned');
 
-  Self.opening := true;
+  Self.opening := True;
   Self.openErrors := '';
+  Self.disconnectAllowed := False;
+  Self.emergency := False;
   var res := dllFuncConnect();
 
   if (res = TRK_ALREADY_OPENNED) then
@@ -948,7 +958,28 @@ end;
 function TTrakceIFace.apiVersionStr(): string;
 begin
   Result := IntToStr((Self.apiVersion shr 8) and $FF) + '.' + IntToStr(Self.apiVersion and $FF);
- end;
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+procedure TTrakceIFace.SetEmergency(new: Boolean);
+begin
+  if (Self.mEmergency = new) then
+    Exit();
+
+  Self.mEmergency := new;
+
+  if (Assigned(Self.OnLog)) then
+  begin
+    if (new) then
+      Self.OnLog(Self, TTrkLogLevel.llWarnings, 'EMERGENCY!')
+    else
+      Self.OnLog(Self, TTrkLogLevel.llInfo, 'Emergency passed away');
+  end;
+
+  if (Assigned(Self.OnEmergencyChanged)) then
+    Self.OnEmergencyChanged(Self);
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
