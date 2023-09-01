@@ -287,17 +287,21 @@ var
   s: string;
 begin
   Result := _ErrCode;
-  if Result <> ERROR_SUCCESS then
+  if (Result <> ERROR_SUCCESS) then
     s := SysErrorMessage(Result)
   else
-    s := ('unknown OS error');
-  if _Format <> '' then
+    s := 'unknown OS error';
+
+  if (_Format <> '') then
+  begin
     try
-      _Error := Format(_Format, [Result, s])
+      _Error := Format(_Format, [Result, s]);
     except
       _Error := s;
-    end else
+    end;
+  end else begin
     _Error := s;
+  end;
 end;
 
 function GetLastOsError(out _Error: string; const _Format: string = ''): DWORD; overload;
@@ -308,70 +312,76 @@ end;
 ////////////////////////////////////////////////////////////////////////////////
 
 constructor TTrakceIFace.Create();
- begin
+begin
   inherited;
   Self.unbound := TList<string>.Create();
   Self.Reset();
- end;
+end;
 
 destructor TTrakceIFace.Destroy();
- begin
-  if (Self.dllHandle <> 0) then Self.UnloadLib();
-  Self.unbound.Free();
+begin
+  try
+    if (Self.dllHandle <> 0) then Self.UnloadLib();
+    Self.unbound.Free();
+  finally
+
+  end;
   inherited;
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.Reset();
- begin
+begin
   Self.dllHandle := 0;
   Self.mApiVersion := _TRK_API_SUPPORTED_VERSIONS[High(_TRK_API_SUPPORTED_VERSIONS)];
-  Self.fOpening := false;
+  Self.fOpening := False;
+  Self.mEmergency := False;
+  Self.disconnectAllowed := False;
 
-  dllFuncApiSupportsVersion := nil;
-  dllFuncApiSetVersion := nil;
-  dllFuncFeatures := nil;
+  Self.dllFuncApiSupportsVersion := nil;
+  Self.dllFuncApiSetVersion := nil;
+  Self.dllFuncFeatures := nil;
 
-  dllFuncLoadConfig := nil;
-  dllFuncSaveConfig := nil;
+  Self.dllFuncLoadConfig := nil;
+  Self.dllFuncSaveConfig := nil;
 
-  dllFuncShowConfigDialog := nil;
+  Self.dllFuncShowConfigDialog := nil;
 
-  dllFuncConnect := nil;
-  dllFuncDisconnect := nil;
-  dllFuncConnected := nil;
+  Self.dllFuncConnect := nil;
+  Self.dllFuncDisconnect := nil;
+  Self.dllFuncConnected := nil;
 
-  dllFuncTrackStatus := nil;
-  dllFuncSetTrackStatus := nil;
+  Self.dllFuncTrackStatus := nil;
+  Self.dllFuncSetTrackStatus := nil;
 
-  dllFuncLocoAcquire := nil;
-  dllFuncLocoRelease := nil;
+  Self.dllFuncLocoAcquire := nil;
+  Self.dllFuncLocoRelease := nil;
 
-  dllFuncEmergencyStop := nil;
-  dllFuncLocoEmergencyStop := nil;
-  dllFuncLocoSetSpeed := nil;
-  dllFuncLocoSetFunc := nil;
+  Self.dllFuncEmergencyStop := nil;
+  Self.dllFuncLocoEmergencyStop := nil;
+  Self.dllFuncLocoSetSpeed := nil;
+  Self.dllFuncLocoSetFunc := nil;
 
-  dllFuncPomWriteCv := nil;
- end;
+  Self.dllFuncPomWriteCv := nil;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Events from dll library, these evetns must be declared as functions
 // (not as functions of objects)
 
 procedure dllBeforeOpen(Sender: TObject; data: Pointer); stdcall;
- begin
+begin
   try
     if (Assigned(TTrakceIFace(data).BeforeOpen)) then
       TTrakceIFace(data).BeforeOpen(TTrakceIFace(data));
   except
 
   end;
- end;
+end;
 
 procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
- begin
+begin
   try
     TTrakceIFace(data).opening := false;
     if (Assigned(TTrakceIFace(data).AfterOpen)) then
@@ -379,20 +389,20 @@ procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
   except
 
   end;
- end;
+end;
 
 procedure dllBeforeClose(Sender: TObject; data: Pointer); stdcall;
- begin
+begin
   try
     if (Assigned(TTrakceIFace(data).BeforeClose)) then
       TTrakceIFace(data).BeforeClose(TTrakceIFace(data));
   except
 
   end;
- end;
+end;
 
 procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
- begin
+begin
   try
     TTrakceIFace(data).opening := false;
     if (Assigned(TTrakceIFace(data).AfterClose)) then
@@ -400,20 +410,20 @@ procedure dllAfterClose(Sender: TObject; data: Pointer); stdcall;
   except
 
   end;
- end;
+end;
 
 procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
- begin
+begin
   try
     if (Assigned(TTrakceIFace(data).OnLog)) then
       TTrakceIFace(data).OnLog(TTrakceIFace(data), TTrkLogLevel(logLevel), msg);
   except
 
   end;
- end;
+end;
 
 procedure dllOnOpenError(Sender: TObject; data: Pointer; msg: PChar); stdcall;
- begin
+begin
   try
     TTrakceIFace(data).opening := false;
     if (Assigned(TTrakceIFace(data).OnOpenError)) then
@@ -421,32 +431,32 @@ procedure dllOnOpenError(Sender: TObject; data: Pointer; msg: PChar); stdcall;
   except
 
   end;
- end;
+end;
 
 procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
- begin
+begin
   try
     if (Assigned(TTrakceIFace(data).OnTrackStatusChanged)) then
       TTrakceIFace(data).OnTrackStatusChanged(TTrakceIFace(data), TTrkStatus(trkStatus));
   except
 
   end;
- end;
+end;
 
 procedure dllOnLocoStolen(Sender: TObject; data: Pointer; addr: Word); stdcall;
- begin
+begin
   try
     if (Assigned(TTrakceIFace(data).OnLocoStolen)) then
       TTrakceIFace(data).OnLocoStolen(TTrakceIFace(data), addr);
   except
 
   end;
- end;
+end;
 
 procedure dllCallback(Sender: TObject; data: Pointer); stdcall;
 var pcb: ^TCb;
     cb: TCb;
- begin
+begin
   try
     pcb := data;
     cb := pcb^;
@@ -458,35 +468,27 @@ var pcb: ^TCb;
   except
 
   end;
- end;
+end;
 
 procedure dllLocoAcquiredCallback(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
-var callback: TLocoAcquiredCallback;
- begin
+begin
   try
     if ((acquiredCallbacks.ContainsKey(LocoInfo.addr)) and (Assigned(acquiredCallbacks[LocoInfo.addr]))) then
      begin
-      callback := acquiredCallbacks[LocoInfo.addr];
+      var callback: TLocoAcquiredCallback := acquiredCallbacks[LocoInfo.addr];
       acquiredCallbacks.Remove(LocoInfo.addr);
       callback(Sender, LocoInfo);
      end;
   except
 
   end;
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Load dll library
 
 procedure TTrakceIFace.LoadLib(path: string; configFn: string);
-var dllFuncStdNotifyBind: TDllStdNotifyBind;
-    dllFuncOnLogBind: TDllLogBind;
-    dllFuncMsgBind: TDllMsgBind;
-    dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind;
-    dllLocoEventBind: TDllLocoEventBind;
-    errorCode: dword;
-    errorStr: string;
- begin
+begin
   Self.unbound.Clear();
 
   if (dllHandle <> 0) then Self.UnloadLib();
@@ -495,7 +497,8 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   dllHandle := LoadLibrary(PChar(dllName));
   if (dllHandle = 0) then
    begin
-    errorCode := GetLastOsError(errorStr);
+    var errorStr: string;
+    var errorCode := GetLastOsError(errorStr);
     raise ETrkCannotLoadLib.Create('Cannot load library: error '+IntToStr(errorCode)+': '+errorStr+'!');
    end;
 
@@ -560,54 +563,64 @@ var dllFuncStdNotifyBind: TDllStdNotifyBind;
   if (not Assigned(dllFuncPomWriteCv)) then unbound.Add('pomWriteCv');
 
   // events
-  dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
-  if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeOpen, self)
-  else unbound.Add('bindBeforeOpen');
+  begin
+    var dllFuncStdNotifyBind: TDllStdNotifyBind;
 
-  dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterOpen'));
-  if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterOpen, self)
-  else unbound.Add('bindAfterOpen');
+    dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeOpen'));
+    if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeOpen, self)
+    else unbound.Add('bindBeforeOpen');
 
-  dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeClose'));
-  if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeClose, self)
-  else unbound.Add('bindBeforeClose');
+    dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterOpen'));
+    if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterOpen, self)
+    else unbound.Add('bindAfterOpen');
 
-  dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterClose'));
-  if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterClose, self)
-  else unbound.Add('bindAfterClose');
+    dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindBeforeClose'));
+    if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllBeforeClose, self)
+    else unbound.Add('bindBeforeClose');
+
+    dllFuncStdNotifyBind := TDllStdNotifyBind(GetProcAddress(dllHandle, 'bindAfterClose'));
+    if (Assigned(dllFuncStdNotifyBind)) then dllFuncStdNotifyBind(@dllAfterClose, self)
+    else unbound.Add('bindAfterClose');
+  end;
 
   // other events
-  dllFuncOnTrackStatusChanged := TDllTrackStatusChangedBind(GetProcAddress(dllHandle, 'bindOnTrackStatusChange'));
-  if (Assigned(dllFuncOnTrackStatusChanged)) then dllFuncOnTrackStatusChanged(@dllOnTrackStatusChanged, self)
-  else unbound.Add('bindOnTrackStatusChange');
+  begin
+    var dllFuncOnTrackStatusChanged: TDllTrackStatusChangedBind := TDllTrackStatusChangedBind(GetProcAddress(dllHandle, 'bindOnTrackStatusChange'));
+    if (Assigned(dllFuncOnTrackStatusChanged)) then dllFuncOnTrackStatusChanged(@dllOnTrackStatusChanged, self)
+    else unbound.Add('bindOnTrackStatusChange');
+  end;
 
-  dllFuncOnLogBind := TDllLogBind(GetProcAddress(dllHandle, 'bindOnLog'));
-  if (Assigned(dllFuncOnLogBind)) then dllFuncOnLogBind(@dllOnLog, self)
-  else unbound.Add('bindOnLog');
+  begin
+    var dllFuncOnLogBind: TDllLogBind := TDllLogBind(GetProcAddress(dllHandle, 'bindOnLog'));
+    if (Assigned(dllFuncOnLogBind)) then dllFuncOnLogBind(@dllOnLog, self)
+    else unbound.Add('bindOnLog');
+  end;
 
   if (Self.apiVersion >= $0101) then
   begin
-    dllFuncMsgBind := TDllMsgBind(GetProcAddress(dllHandle, 'bindOnOpenError'));
+    var dllFuncMsgBind: TDllMsgBind := TDllMsgBind(GetProcAddress(dllHandle, 'bindOnOpenError'));
     if (Assigned(dllFuncMsgBind)) then dllFuncMsgBind(@dllOnOpenError, self)
     else unbound.Add('bindOnOpenError');
   end;
 
-  dllLocoEventBind := TDllLocoEventBind(GetProcAddress(dllHandle, 'bindOnLocoStolen'));
-  if (Assigned(dllLocoEventBind)) then dllLocoEventBind(@dllOnLocoStolen, self)
-  else unbound.Add('bindOnLocoStolen');
+  begin
+    var dllLocoEventBind: TDllLocoEventBind := TDllLocoEventBind(GetProcAddress(dllHandle, 'bindOnLocoStolen'));
+    if (Assigned(dllLocoEventBind)) then dllLocoEventBind(@dllOnLocoStolen, self)
+    else unbound.Add('bindOnLocoStolen');
+  end;
 
   if (Assigned(dllFuncLoadConfig)) then
     Self.LoadConfig(configFn);
- end;
+end;
 
 procedure TTrakceIFace.UnloadLib();
- begin
+begin
   if (Self.dllHandle = 0) then
     raise ETrkNoLibLoaded.Create('No library loaded, cannot unload!');
 
   FreeLibrary(Self.dllHandle);
   Self.Reset();
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Parent should call these methods:
@@ -617,119 +630,113 @@ procedure TTrakceIFace.UnloadLib();
 // file I/O
 
 procedure TTrakceIFace.LoadConfig(fn: string);
-var res: Integer;
- begin
+begin
   if (not Assigned(dllFuncLoadConfig)) then
     raise ETrkFuncNotAssigned.Create('loadConfig not assigned');
 
-  res := dllFuncLoadConfig(PChar(fn));
+  var res := dllFuncLoadConfig(PChar(fn));
 
   if (res = TRK_FILE_CANNOT_ACCESS) then
-    raise ETrkCannotAccessFile.Create('Cannot read file '+fn+'!')
-  else if (res = TRK_FILE_DEVICE_OPENED) then
-    raise ETrkDeviceOpened.Create('Cannot reload config, device opened!')
-  else if (res <> 0) then
+    raise ETrkCannotAccessFile.Create('Cannot read file '+fn+'!');
+  if (res = TRK_FILE_DEVICE_OPENED) then
+    raise ETrkDeviceOpened.Create('Cannot reload config, device opened!');
+  if (res <> 0) then
     raise ETrkGeneralException.Create();
- end;
+end;
 
 procedure TTrakceIFace.SaveConfig(fn: string);
-var res: Integer;
- begin
+begin
   if (not Assigned(dllFuncSaveConfig)) then
     raise ETrkFuncNotAssigned.Create('saveConfig not assigned');
 
-  res := dllFuncSaveConfig(PChar(fn));
+  var res := dllFuncSaveConfig(PChar(fn));
 
   if (res = TRK_FILE_CANNOT_ACCESS) then
-    raise ETrkCannotAccessFile.Create('Cannot write to file '+fn+'!')
-  else if (res <> 0) then
+    raise ETrkCannotAccessFile.Create('Cannot write to file '+fn+'!');
+  if (res <> 0) then
     raise ETrkGeneralException.Create();
- end;
+end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // dialogs:
 
 procedure TTrakceIFace.ShowConfigDialog();
- begin
-  if (Assigned(dllFuncShowConfigDialog)) then
-    dllFuncShowConfigDialog()
-  else
+begin
+  if (not Assigned(dllFuncShowConfigDialog)) then
     raise ETrkFuncNotAssigned.Create('showConfigDialog not assigned');
- end;
+  dllFuncShowConfigDialog();
+end;
 
 function TTrakceIFace.HasDialog(): Boolean;
 begin
- Result := Assigned(Self.dllFuncShowConfigDialog);
+  Result := Assigned(Self.dllFuncShowConfigDialog);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 // open/close:
 
 procedure TTrakceIFace.Connect();
-var res: Integer;
- begin
+begin
   if (not Assigned(dllFuncConnect)) then
     raise ETrkFuncNotAssigned.Create('connect not assigned');
 
   Self.opening := true;
   Self.openErrors := '';
-  res := dllFuncConnect();
+  var res := dllFuncConnect();
 
   if (res = TRK_ALREADY_OPENNED) then
-    raise ETrkAlreadyOpened.Create('Device already opened!')
-  else if (res = TRK_CANNOT_OPEN_PORT) then
-    raise ETrkCannotOpenPort.Create('Cannot open this port!')
-  else if (res <> 0) then
+    raise ETrkAlreadyOpened.Create('Device already opened!');
+  if (res = TRK_CANNOT_OPEN_PORT) then
+    raise ETrkCannotOpenPort.Create('Cannot open this port!');
+  if (res <> 0) then
     raise ETrkGeneralException.Create();
- end;
+end;
 
 procedure TTrakceIFace.Disconnect();
-var res: Integer;
  begin
   if (not Assigned(dllFuncDisconnect)) then
     raise ETrkFuncNotAssigned.Create('disconnect not assigned');
 
-  res := dllFuncDisconnect();
+  Self.disconnectAllowed := True;
+  var res := dllFuncDisconnect();
 
   if (res = TRK_NOT_OPENED) then
-    raise ETrkNotOpened.Create('Device not opened!')
-  else if (res <> 0) then
+    raise ETrkNotOpened.Create('Device not opened!');
+  if (res <> 0) then
     raise ETrkGeneralException.Create();
- end;
+end;
 
 function TTrakceIFace.Connected(): Boolean;
- begin
+begin
   if (not Assigned(dllFuncConnected)) then
-    raise ETrkFuncNotAssigned.Create('connected not assigned')
-  else
-    Result := dllFuncConnected();
- end;
+    raise ETrkFuncNotAssigned.Create('connected not assigned');
+  Result := dllFuncConnected();
+end;
 
 function TTrakceIFace.ConnectedSafe(): Boolean;
- begin
+begin
   if (not Assigned(dllFuncConnected)) then
     Result := false
   else
     Result := dllFuncConnected();
- end;
+end;
 
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrakceIFace.TrackStatus(): TTrkStatus;
- begin
+begin
   if (not Self.ConnectedSafe()) then
     Exit(TTrkStatus.tsUnknown);
 
-  if (Assigned(dllFuncTrackStatus)) then
-    Result := TTrkStatus(dllFuncTrackStatus())
-  else
+  if (not Assigned(dllFuncTrackStatus)) then
     raise ETrkFuncNotAssigned.Create('trackStatus not assigned');
- end;
+  Result := TTrkStatus(dllFuncTrackStatus());
+end;
 
 function TTrakceIFace.TrackStatusSafe(): TTrkStatus;
- begin
+begin
   if (not Self.ConnectedSafe()) then
     Exit(TTrkStatus.tsUnknown);
 
@@ -737,114 +744,112 @@ function TTrakceIFace.TrackStatusSafe(): TTrkStatus;
     Result := TTrkStatus(dllFuncTrackStatus())
   else
     Result := TTrkStatus.tsUnknown;
- end;
+end;
 
 procedure TTrakceIFace.SetTrackStatus(status: TTrkStatus; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncSetTrackStatus)) then
     raise ETrkFuncNotAssigned.Create('setTrackStatus not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.EmergencyStop(ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncEmergencyStop)) then
     raise ETrkFuncNotAssigned.Create('emergencyStop not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncEmergencyStop(dllOk, dllErr);
- end;
+end;
 
 procedure TTrakceIFace.EmergencyStop();
- begin
+begin
   Self.EmergencyStop(Callback(), Callback());
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.LocoAcquire(addr: Word; callback: TLocoAcquiredCallback; err: TCb);
- begin
+begin
   if (not Assigned(dllFuncLocoAcquire)) then
     raise ETrkFuncNotAssigned.Create('locoAcquire not assigned');
   acquiredCallbacks.AddOrSetValue(addr, callback);
   dllFuncLocoAcquire(addr, dllLocoAcquiredCallback, CallbackDll(err));
- end;
+end;
 
 procedure TTrakceIFace.LocoRelease(addr: Word; ok: TCb);
- begin
+begin
   if (not Assigned(dllFuncLocoRelease)) then
     raise ETrkFuncNotAssigned.Create('locoRelease not assigned');
   dllFuncLocoRelease(addr, CallbackDll(ok));
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.LocoEmergencyStop(addr: Word; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncLocoEmergencyStop)) then
     raise ETrkFuncNotAssigned.Create('locoEmergencyStop not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoEmergencyStop(addr, dllOk, dllErr);
- end;
+end;
 
 procedure TTrakceIFace.LocoSetSpeed(addr: Word; speed: Integer; direction: Boolean; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncLocoSetSpeed)) then
     raise ETrkFuncNotAssigned.Create('locoSetSpeed not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetSpeed(addr, speed, direction, dllOk, dllErr);
- end;
+end;
 
 procedure TTrakceIFace.LocoSetFunc(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncLocoSetFunc)) then
     raise ETrkFuncNotAssigned.Create('locoSetFunc not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncLocoSetFunc(addr, funcMask, funcState, dllOk, dllErr);
- end;
+end;
 
 procedure TTrakceIFace.LocoSetSingleFunc(addr: Word; func: Integer; funcState: Cardinal; ok: TCb; err: TCb);
 var fMask: Cardinal;
- begin
+begin
   fMask := 1 shl func;
   Self.LocoSetFunc(addr, fMask, funcState, ok, err);
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PomWriteCv(addr: Word; cv: Word; value: Byte; ok: TCb; err: TCb);
 var dllOk, dllErr: TDllCb;
- begin
+begin
   if (not Assigned(dllFuncPomWriteCv)) then
     raise ETrkFuncNotAssigned.Create('pomWriteCv not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
   dllFuncPomWriteCv(addr, cv, value, dllOk, dllErr);
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.IsApiVersionSupport(version: Cardinal): Boolean;
-var i: Integer;
- begin
-  for i := Low(_TRK_API_SUPPORTED_VERSIONS) to High(_TRK_API_SUPPORTED_VERSIONS) do
+begin
+  for var i: Integer := Low(_TRK_API_SUPPORTED_VERSIONS) to High(_TRK_API_SUPPORTED_VERSIONS) do
     if (_TRK_API_SUPPORTED_VERSIONS[i] = version) then
       Exit(true);
   Result := false;
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 procedure TTrakceIFace.PickApiVersion();
-var i: Integer;
- begin
-  for i := High(_TRK_API_SUPPORTED_VERSIONS) downto Low(_TRK_API_SUPPORTED_VERSIONS) do
+begin
+  for var i: Integer := High(_TRK_API_SUPPORTED_VERSIONS) downto Low(_TRK_API_SUPPORTED_VERSIONS) do
    begin
     if (Self.dllFuncApiSupportsVersion(_TRK_API_SUPPORTED_VERSIONS[i])) then
      begin
@@ -856,18 +861,18 @@ var i: Integer;
    end;
 
   raise ETrkUnsupportedApiVersion.Create('Library does not support any of the supported versions');
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.Callback(callback: TCommandCallbackFunc = nil; data: Pointer = nil): TCommandCallback;
- begin
+begin
   Result.callback := callback;
   Result.data := data;
- end;
+end;
 
 class procedure TTrakceIFace.Callbacks(const ok: TCb; const err: TCb; var pOk: PTCb; var pErr: PTCb);
- begin
+begin
   GetMem(pOk, sizeof(TCb));
   GetMem(pErr, sizeof(TCb));
 
@@ -875,12 +880,12 @@ class procedure TTrakceIFace.Callbacks(const ok: TCb; const err: TCb; var pOk: P
   pErr^ := err;
   pOk^.other := Pointer(pErr);
   pErr^.other := Pointer(pOk);
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.LogLevelToString(ll: TTrkLogLevel): string;
- begin
+begin
   case (ll) of
     llNo: Result := 'No';
     llErrors: Result := 'Err';
@@ -892,47 +897,47 @@ class function TTrakceIFace.LogLevelToString(ll: TTrkLogLevel): string;
   else
     Result := '?';
   end;
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class function TTrakceIFace.CallbackDll(const cb: TCb): TDllCb;
 var pcb: ^TCb;
- begin
+begin
   GetMem(pcb, sizeof(TCb));
   pcb^.callback := cb.callback;
   pcb^.data := cb.data;
   pcb^.other := nil;
   Result.data := pcb;
   Result.callback := dllCallback;
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 class procedure TTrakceIFace.CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
 var pcb: ^TCb;
- begin
+begin
   pcb := dllCb.data;
   pcb^.other := other.data;
- end;
+end;
 
 class procedure TTrakceIFace.CallbackDllReferEachOther(var first: TDllCb; var second: TDllCb);
- begin
+begin
   TTrakceIFace.CallbackDllReferOther(first, second);
   TTrakceIFace.CallbackDllReferOther(second, first);
- end;
+end;
 
 class procedure TTrakceIFace.CallbacksDll(const ok: TCb; const err: TCb; var dllOk: TDllCb; var dllErr: TDllCb);
- begin
+begin
   dllOk := CallbackDll(ok);
   dllErr := CallbackDll(err);
   CallbackDllReferEachOther(dllOk, dllErr);
- end;
+end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
 function TTrakceIFace.apiVersionStr(): string;
- begin
+begin
   Result := IntToStr((Self.apiVersion shr 8) and $FF) + '.' + IntToStr(Self.apiVersion and $FF);
  end;
 
@@ -940,13 +945,13 @@ function TTrakceIFace.apiVersionStr(): string;
 
 class operator TTrkLocoInfo.Equal(a, b: TTrkLocoInfo): Boolean;
 begin
- Result := (a.addr = b.addr) and (a.direction = b.direction) and (a.step = b.step) and
-           (a.maxSpeed = b.maxSpeed) and (a.functions = b.functions);
+  Result := (a.addr = b.addr) and (a.direction = b.direction) and (a.step = b.step) and
+            (a.maxSpeed = b.maxSpeed) and (a.functions = b.functions);
 end;
 
 class operator TTrkLocoInfo.NotEqual(a, b: TTrkLocoInfo): Boolean;
 begin
- Result := not (a = b);
+  Result := not (a = b);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -957,5 +962,5 @@ initialization
 finalization
   acquiredCallbacks.Free();
 
-end.//unit
+end. //unit
 
