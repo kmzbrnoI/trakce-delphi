@@ -90,9 +90,9 @@ type
   // Events called from library to TTrakceIFace:
 
   TTrkStdNotifyEvent = procedure (Sender: TObject; data: Pointer); stdcall;
-  TTrkLogEvent = procedure (Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
+  TTrkLogEvent = procedure (Sender: TObject; data: Pointer; logLevel: NativeInt; msg: PChar); stdcall;
   TTrkMsgEvent = procedure (Sender: TObject; msg: PChar); stdcall;
-  TTrkStatusChangedEv = procedure (Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
+  TTrkStatusChangedEv = procedure (Sender: TObject; data: Pointer; trkStatus: NativeInt); stdcall;
   TTrkLocoEv = procedure (Sender: TObject; data: Pointer; addr: Word); stdcall;
   TDllLocoAcquiredCallback = procedure(Sender: TObject; LocoInfo: TTrkLocoInfo); stdcall;
 
@@ -110,23 +110,23 @@ type
   // Prototypes of functions called to library:
 
   TDllPGeneral = procedure(); stdcall;
-  TDllFGeneral = function(): Integer; stdcall;
-  TDllFCard = function(): Cardinal; stdcall;
+  TDllFGeneral = function(): NativeInt; stdcall;
+  TDllFCard = function(): NativeUInt; stdcall;
   TDllBoolGetter = function(): Boolean; stdcall;
   TDllPCallback = procedure(ok: TDllCb; err: TDllCb); stdcall;
 
-  TDllFileIOFunc = function(filename: PChar): Integer; stdcall;
+  TDllFileIOFunc = function(filename: PChar): NativeInt; stdcall;
 
-  TDllApiVersionAsker = function(version: Cardinal): Boolean; stdcall;
-  TDllApiVersionSetter = function(version: Cardinal): Integer; stdcall;
+  TDllApiVersionAsker = function(version: NativeUInt): Boolean; stdcall;
+  TDllApiVersionSetter = function(version: NativeUInt): NativeInt; stdcall;
 
-  TDllFSetTrackStatus = procedure(trkStatus: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
+  TDllFSetTrackStatus = procedure(trkStatus: NativeUInt; ok: TDllCb; err: TDllCb); stdcall;
 
   TDllFLocoAcquire = procedure(addr: Word; acquired: TDllLocoAcquiredCallback; err: TDllCb); stdcall;
   TDllFLocoRelease = procedure(addr: Word; ok: TDllCb); stdcall;
   TDllFLocoCallback = procedure(addr: Word; ok: TDllCb; err: TDllCb); stdcall;
-  TDllFLocoSetSpeed = procedure(addr: Word; speed: Integer; direction: Boolean; ok: TDllCb; err: TDllCb); stdcall;
-  TDllFLocoSetFunc = procedure(addr: Word; funcMask: Cardinal; funcState: Cardinal; ok: TDllCb; err: TDllCb); stdcall;
+  TDllFLocoSetSpeed = procedure(addr: Word; speed: NativeInt; direction: Boolean; ok: TDllCb; err: TDllCb); stdcall;
+  TDllFLocoSetFunc = procedure(addr: Word; funcMask: NativeUInt; funcState: NativeUInt; ok: TDllCb; err: TDllCb); stdcall;
 
   TDllFPomWriteCv = procedure(addr: Word; cv: Word; value: Byte; ok: TDllCb; err: TDllCb); stdcall;
 
@@ -425,7 +425,7 @@ begin
   end;
 end;
 
-procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: Integer; msg: PChar); stdcall;
+procedure dllOnLog(Sender: TObject; data: Pointer; logLevel: NativeInt; msg: PChar); stdcall;
 begin
   try
     var tif: TTrakceIFace := TTrakceIFace(data);
@@ -448,7 +448,7 @@ begin
   end;
 end;
 
-procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus: Integer); stdcall;
+procedure dllOnTrackStatusChanged(Sender: TObject; data: Pointer; trkStatus: NativeInt); stdcall;
 begin
   try
     var tif: TTrakceIFace := TTrakceIFace(data);
@@ -771,7 +771,7 @@ begin
   if (not Assigned(dllFuncSetTrackStatus)) then
     raise ETrkFuncNotAssigned.Create('setTrackStatus not assigned');
   CallbacksDll(ok, err, dllOk, dllErr);
-  dllFuncSetTrackStatus(Integer(status), dllOk, dllErr);
+  dllFuncSetTrackStatus(NativeUInt(status), dllOk, dllErr);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -892,8 +892,8 @@ end;
 
 class procedure TTrakceIFace.Callbacks(const ok: TCb; const err: TCb; var pOk: PTCb; var pErr: PTCb);
 begin
-  GetMem(pOk, sizeof(TCb));
-  GetMem(pErr, sizeof(TCb));
+  pOk := GetMemory(sizeof(TCb));
+  pErr := GetMemory(sizeof(TCb));
 
   pOk^ := ok;
   pErr^ := err;
@@ -923,7 +923,7 @@ end;
 class function TTrakceIFace.CallbackDll(const cb: TCb): TDllCb;
 var pcb: ^TCb;
 begin
-  GetMem(pcb, sizeof(TCb));
+  pcb := GetMemory(sizeof(TCb));
   pcb^.callback := cb.callback;
   pcb^.data := cb.data;
   pcb^.other := nil;
