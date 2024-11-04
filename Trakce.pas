@@ -53,18 +53,18 @@ type
   );
 
   TTrkStatus = (
-  	tsUnknown = 0,
-  	tsOff = 1,
-  	tsOn = 2,
-  	tsProgramming = 3
+    tsUnknown = 0,
+    tsOff = 1,
+    tsOn = 2,
+    tsProgramming = 3
   );
 
   TTrkLocoInfo = record
-  	addr: Word;
-  	direction: Boolean;
-  	step: Byte;
-  	maxSpeed: Byte;
-  	functions: Cardinal;
+    addr: Word;
+    direction: Boolean;
+    step: Byte;
+    maxSpeed: Byte;
+    functions: Cardinal;
 
     class operator Equal(a, b: TTrkLocoInfo): Boolean;
     class operator NotEqual(a, b: TTrkLocoInfo): Boolean;
