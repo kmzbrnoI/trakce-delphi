@@ -65,6 +65,7 @@ type
     step: Byte;
     maxSpeed: Byte;
     functions: Cardinal;
+    usedByAnother: Boolean;
 
     class operator Equal(a, b: TTrkLocoInfo): Boolean;
     class operator NotEqual(a, b: TTrkLocoInfo): Boolean;
