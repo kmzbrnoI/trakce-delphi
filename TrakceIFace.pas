@@ -25,7 +25,7 @@
   simply use its functions.
 }
 
-unit Trakce;
+unit TrakceIFace;
 
 interface
 
