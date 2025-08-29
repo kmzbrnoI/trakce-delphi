@@ -205,6 +205,7 @@ type
      procedure Reset();
      procedure PickApiVersion();
      procedure SetEmergency(new: Boolean);
+     function IsLibLoaded(): Boolean;
 
      class function CallbackDll(const cb: TCb): TDllCb;
      class procedure CallbackDllReferOther(var dllCb: TDllCb; const other: TDllCb);
@@ -276,6 +277,7 @@ type
      property OnLocoStolen: TLocoEv read eOnLocoStolen write eOnLocoStolen;
 
      property Lib: string read dllName;
+     property libLoaded: boolean read IsLibLoaded;
      property apiVersion: Cardinal read mApiVersion;
      property opening: Boolean read fOpening write fOpening;
      property emergency: Boolean read mEmergency write SetEmergency;
@@ -980,6 +982,13 @@ begin
 
   if (Assigned(Self.OnEmergencyChanged)) then
     Self.OnEmergencyChanged(Self);
+end;
+
+////////////////////////////////////////////////////////////////////////////////
+
+function TTrakceIFace.IsLibLoaded(): Boolean;
+begin
+  Result := (Self.dllHandle <> 0);
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
