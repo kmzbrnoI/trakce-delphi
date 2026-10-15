@@ -395,7 +395,8 @@ procedure dllAfterOpen(Sender: TObject; data: Pointer); stdcall;
 begin
   try
     var tif: TTrakceIFace := TTrakceIFace(data);
-    tif.opening := false;
+    tif.opening := False;
+    tif.disconnectAllowed := False;
     if (Assigned(tif.AfterOpen)) then
       tif.AfterOpen(tif);
   except
@@ -703,7 +704,7 @@ begin
 
   Self.opening := True;
   Self.openErrors := '';
-  Self.disconnectAllowed := False;
+  Self.disconnectAllowed := True;
   Self.emergency := False;
   var res := dllFuncConnect();
 
