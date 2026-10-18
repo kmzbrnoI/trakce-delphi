@@ -701,6 +701,8 @@ procedure TTrakceIFace.Connect();
 begin
   if (not Assigned(dllFuncConnect)) then
     raise ETrkFuncNotAssigned.Create('connect not assigned');
+  if (Self.opening) then
+    raise ETrkAlreadyOpening.Create('Already opening!');
 
   Self.opening := True;
   Self.openErrors := '';

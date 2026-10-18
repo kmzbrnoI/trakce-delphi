@@ -51,6 +51,7 @@ type
   end;
 
   ETrkAlreadyOpened = class(TrkException);
+  ETrkAlreadyOpening = class(TrkException);
   ETrkCannotOpenPort = class(TrkException);
   ETrkNotOpened = class(TrkException);
 
